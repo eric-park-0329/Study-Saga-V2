@@ -104,6 +104,10 @@ class DB:
                       (key, str(value)))
     self.conn.commit()
 
+  def get_setting(self, key, default=None):
+    row = self.conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    return row['value'] if row else default
+
   def get_setting_int(self, key, default):
     row = self.conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
     return int(row['value']) if row else int(default)
