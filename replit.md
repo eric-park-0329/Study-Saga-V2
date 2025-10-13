@@ -66,6 +66,14 @@ The project was configured for Replit with:
 4. Missing `get_setting()` method added to DB class
 
 ### Recent Changes
+- **2025-10-13**: Pixel-art redesign (Terraria-style)
+  - Complete UI transformation with retro pixel-art aesthetic
+  - Custom pixel-perfect character sprites (16px grid-based)
+  - Dark purple/brown color palette with warm golden accents
+  - PixelButton and PixelLabel custom widgets with layered borders
+  - All icons redesigned: hero, trees, crystals, scrolls, tomes, capes, pouches
+  - Fixed character sprite orientation and proportions
+  
 - **2025-10-13**: Initial import and Replit setup
   - Installed Python 3.11 and Kivy dependencies
   - Added system libraries for GUI rendering
