@@ -39,6 +39,7 @@ class PixelBorder(Widget):
 class GameIcon(Widget):
     kind = StringProperty("hero")
     color = ListProperty([1, 1, 1, 1])
+    equipment = {}
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -47,6 +48,16 @@ class GameIcon(Widget):
                   kind=lambda *_: self._redraw(),
                   color=lambda *_: self._redraw())
         Clock.schedule_once(lambda dt: self._redraw(), 0)
+    
+    def set_equipment(self, equipment):
+        self.equipment = equipment
+        self._redraw()
+    
+    def hex_to_rgb(self, hex_color):
+        if not hex_color or hex_color == 'None':
+            return (0.5, 0.5, 0.5, 1)
+        hex_color = hex_color.lstrip('#')
+        return tuple(int(hex_color[i:i+2], 16)/255.0 for i in (0, 2, 4)) + (1,)
     
     def _redraw(self):
         from kivy.graphics import Color, Rectangle
@@ -57,26 +68,68 @@ class GameIcon(Widget):
         
         with self.canvas:
             if self.kind == "hero":
-                # Head (top)
-                Color(0.95, 0.8, 0.65, 1)
-                Rectangle(pos=(x + 6*px, y + 11*px), size=(4*px, 3*px))
-                # Eyes
-                Color(0.3, 0.25, 0.2, 1)
-                Rectangle(pos=(x + 7*px, y + 12*px), size=(px, px))
-                Rectangle(pos=(x + 8*px, y + 12*px), size=(px, px))
+                # Get equipment colors
+                skin_color = self.hex_to_rgb(self.equipment.get('skin_color', '#F5DEB3'))
+                hair_item = self.equipment.get('hair') or {}
+                hair_color = self.hex_to_rgb(hair_item.get('color') or '#8B4513')
+                shirt_item = self.equipment.get('shirt') or {}
+                shirt_color = self.hex_to_rgb(shirt_item.get('color') or '#DC143C')
+                pants_item = self.equipment.get('pants') or {}
+                pants_color = self.hex_to_rgb(pants_item.get('color') or '#4682B4')
+                shoes_item = self.equipment.get('shoes') or {}
+                shoes_color = self.hex_to_rgb(shoes_item.get('color') or '#8B4513')
+                
+                # Hair (back layer - more natural)
+                Color(*hair_color)
+                Rectangle(pos=(x + 5*px, y + 11*px), size=(6*px, 4*px))
+                Rectangle(pos=(x + 4*px, y + 12*px), size=(2*px, 2*px))
+                Rectangle(pos=(x + 10*px, y + 12*px), size=(2*px, 2*px))
+                Rectangle(pos=(x + 5*px, y + 14*px), size=(px, px))
+                Rectangle(pos=(x + 10*px, y + 14*px), size=(px, px))
+                
+                # Head/Face (skin)
+                Color(*skin_color)
+                Rectangle(pos=(x + 6*px, y + 11*px), size=(4*px, 4*px))
+                
+                # Eyebrows (darker brown)
+                Color(0.4, 0.3, 0.2, 1)
+                Rectangle(pos=(x + 6*px, y + 13*px), size=(px, px))
+                Rectangle(pos=(x + 9*px, y + 13*px), size=(px, px))
+                
+                # Eyes (green/blue like Alex)
+                Color(0.2, 0.5, 0.4, 1)
+                Rectangle(pos=(x + 6*px, y + 12*px), size=(px, px))
+                Rectangle(pos=(x + 9*px, y + 12*px), size=(px, px))
+                
+                # Eye highlights (white)
+                Color(1, 1, 1, 0.9)
+                Rectangle(pos=(x + 6*px + px*0.5, y + 12*px + px*0.5), size=(px*0.4, px*0.4))
+                Rectangle(pos=(x + 9*px + px*0.5, y + 12*px + px*0.5), size=(px*0.4, px*0.4))
+                
+                # Nose (subtle)
+                Color(0.85, 0.7, 0.55, 1)
+                Rectangle(pos=(x + 7*px + px*0.5, y + 11*px + px*0.5), size=(px, px*0.6))
+                
+                # Mouth (pink/red)
+                Color(0.8, 0.4, 0.4, 1)
+                Rectangle(pos=(x + 7*px, y + 11*px), size=(2*px, px*0.5))
+                
                 # Body/Shirt
-                Color(0.85, 0.35, 0.25, 1)
+                Color(*shirt_color)
                 Rectangle(pos=(x + 6*px, y + 7*px), size=(4*px, 4*px))
-                # Arms
-                Color(0.95, 0.8, 0.65, 1)
+                
+                # Arms (skin)
+                Color(*skin_color)
                 Rectangle(pos=(x + 5*px, y + 8*px), size=(px, 2*px))
                 Rectangle(pos=(x + 10*px, y + 8*px), size=(px, 2*px))
+                
                 # Pants/Legs
-                Color(0.4, 0.6, 0.9, 1)
+                Color(*pants_color)
                 Rectangle(pos=(x + 6*px, y + 3*px), size=(2*px, 4*px))
                 Rectangle(pos=(x + 8*px, y + 3*px), size=(2*px, 4*px))
+                
                 # Feet/Boots
-                Color(0.6, 0.45, 0.35, 1)
+                Color(*shoes_color)
                 Rectangle(pos=(x + 5*px, y + px), size=(2*px, 2*px))
                 Rectangle(pos=(x + 9*px, y + px), size=(2*px, 2*px))
             
@@ -645,7 +698,16 @@ class StudySagaApp(App):
         if not self.root or not hasattr(self.root, "get_screen"):
             return
         self.refresh_inventory()
+        self.update_character()
         Window.bind(on_keyboard=self._on_keyboard)
+    
+    def update_character(self):
+        equipment = self.db.get_equipment()
+        home_screen = self.root.get_screen("home")
+        for child in home_screen.walk():
+            if isinstance(child, GameIcon) and child.kind == "hero":
+                child.set_equipment(equipment)
+                break
 
     def on_pause(self):
         if self.pomo_running:
@@ -841,7 +903,9 @@ class StudySagaApp(App):
                 row.bind(pos=lambda w, *_: self._update_inv_bg(w), size=lambda w, *_: self._update_inv_bg(w))
                 
                 rarity_color = {'S': (1, 0.85, 0.3), 'A': (0.8, 0.5, 1), 'B': (0.4, 0.8, 1), 'C': (0.7, 0.7, 0.7)}.get(it['rarity'], (1,1,1))
-                name_lbl = Label(text=f"[{it['rarity']}] {it['name']}", color=rarity_color, size_hint_x=0.5)
+                
+                slot_icon = {'hair': '💇', 'shirt': '👕', 'pants': '👖', 'shoes': '👟', 'boost': '⚡'}.get(it['slot'] or it['type'], '📦')
+                name_lbl = Label(text=f"{slot_icon} [{it['rarity']}] {it['name']}", color=rarity_color, size_hint_x=0.5)
                 row.add_widget(name_lbl)
                 
                 boost_txt = ""
@@ -849,12 +913,12 @@ class StudySagaApp(App):
                     boost_txt += f"+{it['boost_exp_pct']}% EXP "
                 if it['boost_crystal_pct'] > 0:
                     boost_txt += f"+{it['boost_crystal_pct']}% 💎"
-                boost_lbl = Label(text=boost_txt if boost_txt else "(Skin)", color=(0.9, 0.85, 0.7, 1), size_hint_x=0.3)
-                row.add_widget(boost_lbl)
+                info_lbl = Label(text=boost_txt if boost_txt else "", color=(0.9, 0.85, 0.7, 1), size_hint_x=0.3)
+                row.add_widget(info_lbl)
                 
-                if it['type'] == 'skin':
+                if it['slot'] or it['type'] == 'skin':
                     btn = Button(text="Equip", size_hint_x=0.2, background_normal='', background_color=(0.4, 0.6, 0.3, 1))
-                    btn.bind(on_release=lambda _, item_id=it['id']: self.equip_skin(item_id))
+                    btn.bind(on_release=lambda _, item_id=it['id']: self.equip_item_and_update(item_id))
                     row.add_widget(btn)
                 grid.add_widget(row)
 
@@ -865,9 +929,10 @@ class StudySagaApp(App):
             Color(0.25, 0.18, 0.12, 1)
             Rectangle(pos=widget.pos, size=widget.size)
 
-    def equip_skin(self, item_id):
+    def equip_item_and_update(self, item_id):
         self.db.equip_item(item_id)
-        notify_info("Equipped!", "Skin equipped successfully")
+        notify_info("Equipped!", "Item equipped successfully!")
+        self.update_character()
         self.refresh_inventory()
 
     def roll_gacha(self, tier):
