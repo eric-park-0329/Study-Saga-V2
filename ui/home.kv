@@ -1,0 +1,54 @@
+#:kivy 2.3.0
+
+<HomeScreen>:
+    FloatLayout:
+        size: root.size
+
+        Label:
+            id: welcome
+            text: "Welcome!"
+            font_size: '22sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.95}
+
+        Label:
+            id: crystals
+            text: "Crystals: -"
+            font_size: '16sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.88}
+
+        Image:
+            id: avatar_img
+            size_hint: None, None
+            size: dp(192), dp(192)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 0.5, None
+            height: dp(320)
+            spacing: dp(8)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.25}
+
+            Button:
+                text: "Study"
+                on_release: app.go_study()
+
+            Button:
+                text: "Gacha"
+                on_release: app.go_gacha()
+
+            Button:
+                text: "Inventory"
+                on_release: app.go_inventory()
+
+            Button:
+                text: "Settings"
+                on_release: app.go_settings()
+
+            Button:
+                text: "Gender Select"
+                on_release: app.go_gender()
+
+            Button:
+                text: "Logout"
+                on_release: app.logout()

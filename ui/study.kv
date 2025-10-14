@@ -1,0 +1,22 @@
+#:kivy 2.3.0
+
+<StudyScreen>:
+    FloatLayout:
+        size: root.size
+
+        Label:
+            text: "Study Session"
+            font_size: '26sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.9}
+
+        Label:
+            text: root.status or "Timer: 00:00"
+            font_size: '18sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.82}
+
+        Button:
+            text: "Back"
+            size_hint: 0.2, None
+            height: dp(44)
+            pos_hint: {'center_x': 0.5, 'y': 0.05}
+            on_release: app.go_home()

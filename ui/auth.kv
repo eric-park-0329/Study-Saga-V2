@@ -1,0 +1,61 @@
+#:kivy 2.3.0
+
+<Label>:
+    color: 1,1,1,1
+
+<TextInput>:
+    foreground_color: 1,1,1,1
+    cursor_color: 1,1,1,1
+    hint_text_color: 1,1,1,0.5
+    background_normal: ''
+    background_active: ''
+    background_color: 1,1,1,0.08
+
+<AuthScreen>:
+    FloatLayout:
+        size: root.size
+
+        Label:
+            text: "[b]Study Saga[/b]"
+            markup: True
+            font_size: '28sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.95}
+
+        Label:
+            text: root.status or root.status_msg
+            font_size: '14sp'
+            color: 1, 0.85, 0.4, 1
+            size_hint: 0.9, None
+            height: '24dp'
+            pos_hint: {'center_x': 0.5, 'top': 0.86}
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 0.6, None
+            height: '220dp'
+            spacing: '10dp'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            TextInput:
+                id: username
+                hint_text: 'Username'
+                multiline: False
+
+            TextInput:
+                id: password
+                hint_text: 'Password'
+                password: True
+                multiline: False
+
+            BoxLayout:
+                size_hint_y: None
+                height: '44dp'
+                spacing: '10dp'
+
+                Button:
+                    text: 'Login'
+                    on_release: app.login(username.text, password.text)
+
+                Button:
+                    text: 'Sign up'
+                    on_release: app.signup(username.text, password.text)

@@ -1,0 +1,31 @@
+#:kivy 2.3.0
+
+<GenderSelectScreen>:
+    FloatLayout:
+        size: root.size
+
+        Label:
+            text: "Choose your character"
+            font_size: '26sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.9}
+
+        BoxLayout:
+            size_hint: 0.6, None
+            height: dp(60)
+            spacing: dp(10)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            Button:
+                text: "Male"
+                on_release: app.set_gender("male")
+
+            Button:
+                text: "Female"
+                on_release: app.set_gender("female")
+
+        Button:
+            text: "Back"
+            size_hint: 0.2, None
+            height: dp(44)
+            pos_hint: {'center_x': 0.5, 'y': 0.05}
+            on_release: app.go_home()

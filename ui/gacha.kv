@@ -1,0 +1,70 @@
+#:kivy 2.3.0
+
+<GachaScreen>:
+    FloatLayout:
+        size: root.size
+
+        Label:
+            text: "Gacha"
+            font_size: '26sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.92}
+
+        Label:
+            id: crystals
+            text: "Crystals: -"
+            font_size: '18sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.85}
+
+        # FX widget (defined in Python)
+        Widget:
+            id: fx_holder
+            size_hint: None, None
+            size: dp(140), dp(140)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+            GachaFX:
+                id: fx
+                pos: self.parent.pos
+                size: dp(120), dp(120)
+                canvas.before:
+                    PushMatrix
+                    Rotate:
+                        angle: self.angle
+                        origin: self.center
+                    Scale:
+                        x: self.scale
+                        y: self.scale
+                        origin: self.center
+                canvas.after:
+                    PopMatrix
+                canvas:
+                    Color:
+                        rgba: self.color
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
+        Image:
+            id: result_img
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+
+        Label:
+            text: root.status
+            font_size: '18sp'
+            color: 1,0.85,0.4,1
+            pos_hint: {'center_x': 0.5, 'top': 0.44}
+
+        BoxLayout:
+            size_hint: 0.6, None
+            height: dp(44)
+            spacing: dp(10)
+            pos_hint: {'center_x': 0.5, 'y': 0.06}
+
+            Button:
+                text: "Roll (50)"
+                on_release: app.gacha_roll()
+
+            Button:
+                text: "Back"
+                on_release: app.go_home()
