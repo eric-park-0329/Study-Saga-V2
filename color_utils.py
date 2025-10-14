@@ -1,41 +1,33 @@
-
 from PIL import Image
-import colorsys
+from typing import Tuple, List
 
-def hex_to_rgb(h):
-    h = h.lstrip("#")
-    return tuple(int(h[i:i+2], 16) for i in (0,2,4))
+PALETTE_20: List[str] = [
+    "#ff0000","#ff7f00","#ffbf00","#ffff00","#bfff00",
+    "#7fff00","#00ff00","#00ff7f","#00ffbf","#00ffff",
+    "#00bfff","#007fff","#0000ff","#7f00ff","#bf00ff",
+    "#ff00ff","#ff007f","#ff00bf","#964B00","#ffffff"
+]
 
-def lum(rgb):
-    r,g,b = [c/255.0 for c in rgb]
-    return 0.2126*r + 0.7152*g + 0.0722*b
+def hex_to_rgb(h: str) -> Tuple[int,int,int]:
+    h = h.strip().lstrip("#")
+    if len(h) == 3:
+        h = "".join([c*2 for c in h])
+    r = int(h[0:2], 16); g = int(h[2:4], 16); b = int(h[4:6], 16)
+    return r,g,b
 
-def set_luma(rgb, target_l):
-    r,g,b = [c/255.0 for c in rgb[:3]]
-    h,l,s = colorsys.rgb_to_hls(r,g,b)
-    nr,ng,nb = colorsys.hls_to_rgb(h, max(0.0, min(1.0, target_l)), s)
-    return (int(nr*255), int(ng*255), int(nb*255), 255)
-
-def recolor_preserve_shade(img, mask, base_mean_rgb, target_rgb):
-    if img.mode != "RGBA": img = img.convert("RGBA")
-    w, h = img.size
-    p = img.load()
-    m = mask.load()
-    L0 = max(1e-4, lum(base_mean_rgb))
-    Lt = lum(target_rgb)
-    out = Image.new("RGBA", (w,h), (0,0,0,0))
-    q = out.load()
-    for y in range(h):
-        for x in range(w):
-            if m[x,y] > 0:
-                px = p[x,y]
-                # shade factor vs mean of this region
-                Lp = lum(px[:3])
-                factor = Lp / L0
-                newL = max(0.0, min(1.0, factor * Lt))
-                # reuse target hue/sat, set luminance
-                r,g,b,a = set_luma(target_rgb+(255,), newL)
-                q[x,y] = (r,g,b, px[3])
-    img = img.copy()
-    img.alpha_composite(out)
-    return img
+def recolor_preserve_shade(img: Image.Image, hex_color: str) -> Image.Image:
+    if not hex_color:
+        return Image.new("RGBA", img.size, (0,0,0,0))
+    r,g,b = hex_to_rgb(hex_color)
+    src = img.convert("RGBA")
+    out = Image.new("RGBA", src.size)
+    src_px = src.load(); out_px = out.load()
+    for y in range(src.height):
+        for x in range(src.width):
+            pr,pg,pb,pa = src_px[x,y]
+            if pa == 0:
+                out_px[x,y] = (0,0,0,0); continue
+            lum = max(pr,pg,pb)/255.0
+            nr = int(r*lum); ng = int(g*lum); nb = int(b*lum)
+            out_px[x,y] = (nr,ng,nb,pa)
+    return out

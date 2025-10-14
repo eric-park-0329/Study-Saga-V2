@@ -5,7 +5,7 @@ package.domain = org.example
 source.dir = .
 source.include_exts = py,kv,png,jpg,ttf,db
 version = 0.1.0
-requirements = python3,kivy,plyer
+requirements = kivy==2.3.1, plyer==2.1.0, pillow==10.4.0, bcrypt==4.2.0
 orientation = portrait
 fullscreen = 0
 android.api = 35
