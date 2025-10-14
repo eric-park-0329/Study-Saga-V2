@@ -50,22 +50,46 @@ CREATE TABLE IF NOT EXISTS weekly_state(
 """
 
 DEFAULT_ITEMS = [
+  # Hair styles
   ("Basic Hair", "hair", "hair", "C", 0, 0, "#8B4513", 1),  # owned by default
   ("Blonde Hair", "hair", "hair", "B", 0, 0, "#FFD700", 0),
   ("Black Hair", "hair", "hair", "B", 0, 0, "#2C1B18", 0),
   ("Red Hair", "hair", "hair", "A", 0, 0, "#D2691E", 0),
+  ("Silver Hair", "hair", "hair", "A", 0, 0, "#C0C0C0", 0),
+  ("Purple Hair", "hair", "hair", "S", 0, 0, "#9B59B6", 0),
+  ("Pink Hair", "hair", "hair", "S", 0, 0, "#FF69B4", 0),
+  ("Green Hair", "hair", "hair", "A", 0, 0, "#2ECC71", 0),
+  
+  # Shirts
   ("Blue Shirt", "shirt", "shirt", "C", 0, 0, "#4169E1", 1),  # owned by default
   ("Red Shirt", "shirt", "shirt", "B", 0, 0, "#DC143C", 0),
   ("Green Shirt", "shirt", "shirt", "B", 0, 0, "#228B22", 0),
+  ("Purple Robe", "shirt", "shirt", "A", 2, 2, "#8B008B", 0),
   ("Gold Armor", "shirt", "shirt", "S", 5, 5, "#DAA520", 0),
+  
+  # Pants
   ("Blue Pants", "pants", "pants", "C", 0, 0, "#4682B4", 1),  # owned by default
   ("Black Pants", "pants", "pants", "B", 0, 0, "#2F4F4F", 0),
+  ("Brown Pants", "pants", "pants", "B", 0, 0, "#8B4513", 0),
+  
+  # Shoes
   ("Brown Boots", "shoes", "shoes", "C", 0, 0, "#8B4513", 1),  # owned by default
   ("Black Boots", "shoes", "shoes", "B", 0, 0, "#1C1C1C", 0),
+  ("Red Boots", "shoes", "shoes", "A", 0, 0, "#DC143C", 0),
+  
+  # Glasses
   ("Round Glasses", "cosmetic", "glasses", "B", 0, 0, "#000000", 0),
   ("Square Glasses", "cosmetic", "glasses", "A", 0, 0, "#333333", 0),
+  ("Gold Glasses", "cosmetic", "glasses", "S", 3, 3, "#DAA520", 0),
+  ("Blue Glasses", "cosmetic", "glasses", "B", 0, 0, "#4169E1", 0),
+  
+  # Mustaches
   ("Classic Mustache", "cosmetic", "mustache", "B", 0, 0, "#2C1B18", 0),
   ("Handlebar Mustache", "cosmetic", "mustache", "A", 0, 0, "#5C3A21", 0),
+  ("Curly Mustache", "cosmetic", "mustache", "A", 0, 0, "#4A3C2A", 0),
+  ("White Mustache", "cosmetic", "mustache", "S", 2, 2, "#F5F5F5", 0),
+  
+  # Boosts
   ("Scholar's Scarf", "boost", None, "B", 10, 0, None, 0),
   ("Gem Pouch", "boost", None, "B", 0, 15, None, 0),
   ("Focus Band", "boost", None, "A", 15, 10, None, 0),
@@ -378,6 +402,25 @@ class DB:
     self.conn.execute("UPDATE player SET crystals=crystals-? WHERE id=1", (amount,))
     self.conn.commit()
     return True
+  
+  def set_gender(self, gender):
+    self.conn.execute("UPDATE player SET gender=? WHERE id=1", (gender,))
+    self.conn.commit()
+  
+  def unequip_item(self, slot):
+    if slot == 'hair':
+      self.conn.execute("UPDATE player SET equipped_hair=NULL WHERE id=1")
+    elif slot == 'shirt':
+      self.conn.execute("UPDATE player SET equipped_shirt=NULL WHERE id=1")
+    elif slot == 'pants':
+      self.conn.execute("UPDATE player SET equipped_pants=NULL WHERE id=1")
+    elif slot == 'shoes':
+      self.conn.execute("UPDATE player SET equipped_shoes=NULL WHERE id=1")
+    elif slot == 'glasses':
+      self.conn.execute("UPDATE player SET equipped_glasses=NULL WHERE id=1")
+    elif slot == 'mustache':
+      self.conn.execute("UPDATE player SET equipped_mustache=NULL WHERE id=1")
+    self.conn.commit()
 
   def pool_by_tier(self, tier):
     rows = self.conn.execute("SELECT * FROM items").fetchall()

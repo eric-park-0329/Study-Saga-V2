@@ -40,15 +40,13 @@ class PixelBorder(Widget):
 
 class GameIcon(Widget):
     kind = StringProperty("hero")
-    color = ListProperty([1, 1, 1, 1])
     equipment = {}
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(pos=lambda *_: self._redraw(),
                   size=lambda *_: self._redraw(),
-                  kind=lambda *_: self._redraw(),
-                  color=lambda *_: self._redraw())
+                  kind=lambda *_: self._redraw())
         Clock.schedule_once(lambda dt: self._redraw(), 0)
     
     def set_equipment(self, equipment):
@@ -603,6 +601,29 @@ KV = r'''
                         size_hint_y: None
                         height: dp(40)
                     PixelLabel:
+                        text: "Character Gender"
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(8)
+                        PixelButton:
+                            id: btn_female
+                            text: "♀ Female"
+                            on_release: app.set_gender_ui('female')
+                            canvas.before:
+                                Color:
+                                    rgba: (0.6, 0.3, 0.6, 1) if app.db.get_player().get('gender') == 'female' else (0.25, 0.18, 0.12, 1)
+                        PixelButton:
+                            id: btn_male
+                            text: "♂ Male"
+                            on_release: app.set_gender_ui('male')
+                            canvas.before:
+                                Color:
+                                    rgba: (0.3, 0.5, 0.7, 1) if app.db.get_player().get('gender') == 'male' else (0.25, 0.18, 0.12, 1)
+                    PixelLabel:
                         text: "Blocked packages"
                         halign: 'left'
                         valign: 'middle'
@@ -873,6 +894,7 @@ class StudySagaApp(App):
 
     def refresh_inventory(self):
         items = self.db.list_inventory()
+        equipment = self.db.get_equipment()
         from kivy.uix.boxlayout import BoxLayout
         from kivy.uix.label import Label
         from kivy.uix.button import Button
@@ -893,7 +915,10 @@ class StudySagaApp(App):
                 
                 rarity_color = {'S': (1, 0.85, 0.3), 'A': (0.8, 0.5, 1), 'B': (0.4, 0.8, 1), 'C': (0.7, 0.7, 0.7)}.get(it['rarity'], (1,1,1))
                 
-                slot_icon = {'hair': '💇', 'shirt': '👕', 'pants': '👖', 'shoes': '👟', 'boost': '⚡'}.get(it['slot'] or it['type'], '📦')
+                slot_icon = {
+                    'hair': '💇', 'shirt': '👕', 'pants': '👖', 'shoes': '👟', 
+                    'glasses': '🕶️', 'mustache': '🥸', 'boost': '⚡'
+                }.get(it['slot'] or it['type'], '📦')
                 name_lbl = Label(text=f"{slot_icon} [{it['rarity']}] {it['name']}", color=rarity_color, size_hint_x=0.5)
                 row.add_widget(name_lbl)
                 
@@ -905,9 +930,19 @@ class StudySagaApp(App):
                 info_lbl = Label(text=boost_txt if boost_txt else "", color=(0.9, 0.85, 0.7, 1), size_hint_x=0.3)
                 row.add_widget(info_lbl)
                 
-                if it['slot'] or it['type'] == 'skin':
-                    btn = Button(text="Equip", size_hint_x=0.2, background_normal='', background_color=(0.4, 0.6, 0.3, 1))
-                    btn.bind(on_release=lambda _, item_id=it['id']: self.equip_item_and_update(item_id))
+                # Check if this item is equipped
+                slot = it['slot']
+                is_equipped = False
+                if slot and equipment.get(slot) and equipment[slot].get('id') == it['id']:
+                    is_equipped = True
+                
+                if slot or it['type'] == 'skin':
+                    if is_equipped:
+                        btn = Button(text="✓ Equipped", size_hint_x=0.2, background_normal='', background_color=(0.6, 0.5, 0.3, 1))
+                        btn.bind(on_release=lambda _, s=slot: self.unequip_item_and_update(s))
+                    else:
+                        btn = Button(text="Equip", size_hint_x=0.2, background_normal='', background_color=(0.4, 0.6, 0.3, 1))
+                        btn.bind(on_release=lambda _, item_id=it['id']: self.equip_item_and_update(item_id))
                     row.add_widget(btn)
                 grid.add_widget(row)
 
@@ -923,6 +958,18 @@ class StudySagaApp(App):
         notify_info("Equipped!", "Item equipped successfully!")
         self.update_character()
         self.refresh_inventory()
+    
+    def unequip_item_and_update(self, slot):
+        self.db.unequip_item(slot)
+        notify_info("Unequipped!", f"Removed {slot} item")
+        self.update_character()
+        self.refresh_inventory()
+    
+    def set_gender_ui(self, gender):
+        self.db.set_gender(gender)
+        notify_info("Gender Updated!", f"Character gender set to {gender}")
+        self.update_character()
+        self.update_stats()
 
     def roll_gacha(self, tier):
         success, item = self.gacha.roll(tier)
