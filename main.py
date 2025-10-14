@@ -14,8 +14,10 @@ from studysaga.services.notifications import notify_info
 from studysaga.services.gacha import GachaMachine
 from studysaga.services.pomodoro import PomodoroController
 import sqlite3, os, time, datetime, json, math, random
+from io import BytesIO
 
 from studysaga.db import DB
+from sprite_renderer_ref import SpriteRendererRef
 
 class PixelBorder(Widget):
     def __init__(self, **kwargs):
@@ -61,6 +63,7 @@ class GameIcon(Widget):
     
     def _redraw(self):
         from kivy.graphics import Color, Rectangle
+        from kivy.graphics.texture import Texture
         self.canvas.clear()
         w, h = self.size
         x, y = self.pos
@@ -68,70 +71,56 @@ class GameIcon(Widget):
         
         with self.canvas:
             if self.kind == "hero":
-                # Get equipment colors
-                skin_color = self.hex_to_rgb(self.equipment.get('skin_color', '#F5DEB3'))
-                hair_item = self.equipment.get('hair') or {}
-                hair_color = self.hex_to_rgb(hair_item.get('color') or '#8B4513')
-                shirt_item = self.equipment.get('shirt') or {}
-                shirt_color = self.hex_to_rgb(shirt_item.get('color') or '#DC143C')
-                pants_item = self.equipment.get('pants') or {}
-                pants_color = self.hex_to_rgb(pants_item.get('color') or '#4682B4')
-                shoes_item = self.equipment.get('shoes') or {}
-                shoes_color = self.hex_to_rgb(shoes_item.get('color') or '#8B4513')
-                
-                # Hair (back layer - more natural)
-                Color(*hair_color)
-                Rectangle(pos=(x + 5*px, y + 11*px), size=(6*px, 4*px))
-                Rectangle(pos=(x + 4*px, y + 12*px), size=(2*px, 2*px))
-                Rectangle(pos=(x + 10*px, y + 12*px), size=(2*px, 2*px))
-                Rectangle(pos=(x + 5*px, y + 14*px), size=(px, px))
-                Rectangle(pos=(x + 10*px, y + 14*px), size=(px, px))
-                
-                # Head/Face (skin)
-                Color(*skin_color)
-                Rectangle(pos=(x + 6*px, y + 11*px), size=(4*px, 4*px))
-                
-                # Eyebrows (darker brown)
-                Color(0.4, 0.3, 0.2, 1)
-                Rectangle(pos=(x + 6*px, y + 13*px), size=(px, px))
-                Rectangle(pos=(x + 9*px, y + 13*px), size=(px, px))
-                
-                # Eyes (green/blue like Alex)
-                Color(0.2, 0.5, 0.4, 1)
-                Rectangle(pos=(x + 6*px, y + 12*px), size=(px, px))
-                Rectangle(pos=(x + 9*px, y + 12*px), size=(px, px))
-                
-                # Eye highlights (white)
-                Color(1, 1, 1, 0.9)
-                Rectangle(pos=(x + 6*px + px*0.5, y + 12*px + px*0.5), size=(px*0.4, px*0.4))
-                Rectangle(pos=(x + 9*px + px*0.5, y + 12*px + px*0.5), size=(px*0.4, px*0.4))
-                
-                # Nose (subtle)
-                Color(0.85, 0.7, 0.55, 1)
-                Rectangle(pos=(x + 7*px + px*0.5, y + 11*px + px*0.5), size=(px, px*0.6))
-                
-                # Mouth (pink/red)
-                Color(0.8, 0.4, 0.4, 1)
-                Rectangle(pos=(x + 7*px, y + 11*px), size=(2*px, px*0.5))
-                
-                # Body/Shirt
-                Color(*shirt_color)
-                Rectangle(pos=(x + 6*px, y + 7*px), size=(4*px, 4*px))
-                
-                # Arms (skin)
-                Color(*skin_color)
-                Rectangle(pos=(x + 5*px, y + 8*px), size=(px, 2*px))
-                Rectangle(pos=(x + 10*px, y + 8*px), size=(px, 2*px))
-                
-                # Pants/Legs
-                Color(*pants_color)
-                Rectangle(pos=(x + 6*px, y + 3*px), size=(2*px, 4*px))
-                Rectangle(pos=(x + 8*px, y + 3*px), size=(2*px, 4*px))
-                
-                # Feet/Boots
-                Color(*shoes_color)
-                Rectangle(pos=(x + 5*px, y + px), size=(2*px, 2*px))
-                Rectangle(pos=(x + 9*px, y + px), size=(2*px, 2*px))
+                # Use PIL-based renderer for hero character
+                try:
+                    # Build appearance from equipment
+                    appearance = {
+                        "sex": self.equipment.get('gender', 'female'),
+                        "skin_color": self.equipment.get('skin_color', '#F5DEB3'),
+                        "hair_color": (self.equipment.get('hair') or {}).get('color', '#8B4513'),
+                        "shirt_color": (self.equipment.get('shirt') or {}).get('color', '#4169E1'),
+                        "pants_color": (self.equipment.get('pants') or {}).get('color', '#4682B4'),
+                        "shoes_color": (self.equipment.get('shoes') or {}).get('color', '#8B4513'),
+                        "belt_color": "#A1742C",
+                        "has_glasses": self.equipment.get('glasses') is not None,
+                        "glasses_color": (self.equipment.get('glasses') or {}).get('color', '#000000'),
+                        "has_mustache": self.equipment.get('mustache') is not None,
+                        "facial_hair_color": (self.equipment.get('mustache') or {}).get('color', '#2C1B18')
+                    }
+                    
+                    # Render using SpriteRendererRef
+                    renderer = SpriteRendererRef(sex=appearance["sex"], scale=1)
+                    pil_img = renderer.render(appearance)
+                    
+                    # Convert PIL image to Kivy texture
+                    pil_img = pil_img.convert('RGBA')
+                    img_data = pil_img.tobytes()
+                    texture = Texture.create(size=(pil_img.width, pil_img.height), colorfmt='rgba')
+                    texture.blit_buffer(img_data, colorfmt='rgba', bufferfmt='ubyte')
+                    texture.flip_vertical()
+                    
+                    # Calculate aspect ratio to fit in widget
+                    img_w, img_h = pil_img.size
+                    aspect = img_w / img_h
+                    if w / h > aspect:
+                        draw_h = h
+                        draw_w = h * aspect
+                    else:
+                        draw_w = w
+                        draw_h = w / aspect
+                    
+                    draw_x = x + (w - draw_w) / 2
+                    draw_y = y + (h - draw_h) / 2
+                    
+                    Color(1, 1, 1, 1)
+                    Rectangle(texture=texture, pos=(draw_x, draw_y), size=(draw_w, draw_h))
+                except Exception as e:
+                    # Fallback to simple colored square if rendering fails
+                    import traceback
+                    Color(0.8, 0.2, 0.2, 1)
+                    Rectangle(pos=(x, y), size=(w, h))
+                    print(f"Hero render error: {e}")
+                    traceback.print_exc()
             
             elif self.kind == "tree":
                 Color(0.45, 0.3, 0.2, 1)

@@ -11,7 +11,7 @@ def lum(rgb):
     return 0.2126*r + 0.7152*g + 0.0722*b
 
 def set_luma(rgb, target_l):
-    r,g,b = [c/255.0 for c in rgb]
+    r,g,b = [c/255.0 for c in rgb[:3]]
     h,l,s = colorsys.rgb_to_hls(r,g,b)
     nr,ng,nb = colorsys.hls_to_rgb(h, max(0.0, min(1.0, target_l)), s)
     return (int(nr*255), int(ng*255), int(nb*255), 255)
