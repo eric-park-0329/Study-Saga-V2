@@ -62,6 +62,10 @@ DEFAULT_ITEMS = [
   ("Black Pants", "pants", "pants", "B", 0, 0, "#2F4F4F", 0),
   ("Brown Boots", "shoes", "shoes", "C", 0, 0, "#8B4513", 1),  # owned by default
   ("Black Boots", "shoes", "shoes", "B", 0, 0, "#1C1C1C", 0),
+  ("Round Glasses", "cosmetic", "glasses", "B", 0, 0, "#000000", 0),
+  ("Square Glasses", "cosmetic", "glasses", "A", 0, 0, "#333333", 0),
+  ("Classic Mustache", "cosmetic", "mustache", "B", 0, 0, "#2C1B18", 0),
+  ("Handlebar Mustache", "cosmetic", "mustache", "A", 0, 0, "#5C3A21", 0),
   ("Scholar's Scarf", "boost", None, "B", 10, 0, None, 0),
   ("Gem Pouch", "boost", None, "B", 0, 15, None, 0),
   ("Focus Band", "boost", None, "A", 15, 10, None, 0),
@@ -90,10 +94,16 @@ class DB:
       cur.execute("ALTER TABLE player ADD COLUMN equipped_pants INTEGER")
     if 'equipped_shoes' not in cols:
       cur.execute("ALTER TABLE player ADD COLUMN equipped_shoes INTEGER")
+    if 'equipped_glasses' not in cols:
+      cur.execute("ALTER TABLE player ADD COLUMN equipped_glasses INTEGER")
+    if 'equipped_mustache' not in cols:
+      cur.execute("ALTER TABLE player ADD COLUMN equipped_mustache INTEGER")
     if 'hair_color' not in cols:
       cur.execute("ALTER TABLE player ADD COLUMN hair_color TEXT DEFAULT '#8B4513'")
     if 'skin_color' not in cols:
       cur.execute("ALTER TABLE player ADD COLUMN skin_color TEXT DEFAULT '#F5DEB3'")
+    if 'gender' not in cols:
+      cur.execute("ALTER TABLE player ADD COLUMN gender TEXT NOT NULL DEFAULT 'female'")
     
     cur.execute("PRAGMA table_info(items)")
     item_cols = [row[1] for row in cur.fetchall()]
@@ -286,6 +296,10 @@ class DB:
       self.conn.execute("UPDATE player SET equipped_pants=? WHERE id=1", (item_id,))
     elif it['slot'] == 'shoes':
       self.conn.execute("UPDATE player SET equipped_shoes=? WHERE id=1", (item_id,))
+    elif it['slot'] == 'glasses':
+      self.conn.execute("UPDATE player SET equipped_glasses=? WHERE id=1", (item_id,))
+    elif it['slot'] == 'mustache':
+      self.conn.execute("UPDATE player SET equipped_mustache=? WHERE id=1", (item_id,))
     self.conn.commit()
   
   def get_equipment(self):
@@ -304,10 +318,36 @@ class DB:
     if p.get('equipped_shoes'):
       item = self.conn.execute("SELECT * FROM items WHERE id=?", (p['equipped_shoes'],)).fetchone()
       equipment['shoes'] = dict(item) if item else None
+    if p.get('equipped_glasses'):
+      item = self.conn.execute("SELECT * FROM items WHERE id=?", (p['equipped_glasses'],)).fetchone()
+      equipment['glasses'] = dict(item) if item else None
+    if p.get('equipped_mustache'):
+      item = self.conn.execute("SELECT * FROM items WHERE id=?", (p['equipped_mustache'],)).fetchone()
+      equipment['mustache'] = dict(item) if item else None
     
     equipment['hair_color'] = p.get('hair_color', '#8B4513')
     equipment['skin_color'] = p.get('skin_color', '#F5DEB3')
+    equipment['gender'] = p.get('gender', 'female')
     return equipment
+  
+  def build_appearance(self):
+    p = self.get_player()
+    eq = self.get_equipment()
+    def color(slot, default_hex):
+      return (eq.get(slot) or {}).get('color', default_hex)
+    return {
+      "sex": eq['gender'],
+      "skin_color": eq['skin_color'],
+      "hair_color": color('hair', p.get('hair_color','#8B4513')),
+      "shirt_color": color('shirt', '#4169E1'),
+      "pants_color": color('pants', '#4682B4'),
+      "shoes_color": color('shoes', '#8B4513'),
+      "belt_color": "#A1742C",
+      "has_glasses": eq.get('glasses') is not None,
+      "glasses_color": color('glasses', '#000000'),
+      "has_mustache": eq.get('mustache') is not None,
+      "facial_hair_color": color('mustache', '#2C1B18')
+    }
 
   def get_equipped_boosts(self):
     row = self.conn.execute(
