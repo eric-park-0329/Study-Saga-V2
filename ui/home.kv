@@ -18,16 +18,18 @@
 
         Image:
             id: avatar_img
+            allow_stretch: True
+            keep_ratio: True
             size_hint: None, None
             size: dp(192), dp(192)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.68}
 
         BoxLayout:
             orientation: 'vertical'
             size_hint: 0.5, None
-            height: dp(320)
+            height: dp(340)
             spacing: dp(8)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.25}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.22}
 
             Button:
                 text: "Study"

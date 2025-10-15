@@ -15,12 +15,12 @@
             font_size: '18sp'
             pos_hint: {'center_x': 0.5, 'top': 0.85}
 
-        # FX widget (defined in Python)
+        # FX widget (python class GachaFX)
         Widget:
             id: fx_holder
             size_hint: None, None
             size: dp(140), dp(140)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
             GachaFX:
                 id: fx
                 pos: self.parent.pos
@@ -47,7 +47,7 @@
             id: result_img
             size_hint: None, None
             size: dp(160), dp(160)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.58}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
 
         Label:
             text: root.status
@@ -56,7 +56,7 @@
             pos_hint: {'center_x': 0.5, 'top': 0.44}
 
         BoxLayout:
-            size_hint: 0.6, None
+            size_hint: 0.8, None
             height: dp(44)
             spacing: dp(10)
             pos_hint: {'center_x': 0.5, 'y': 0.06}
@@ -64,6 +64,10 @@
             Button:
                 text: "Roll (50)"
                 on_release: app.gacha_roll()
+
+            Button:
+                text: "Roll x10 (480)"
+                on_release: app.gacha_roll_10()
 
             Button:
                 text: "Back"
