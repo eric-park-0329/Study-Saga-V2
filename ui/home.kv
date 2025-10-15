@@ -7,8 +7,8 @@
         Label:
             id: welcome
             text: "Welcome!"
-            font_size: '22sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.95}
+            font_size: '24sp'
+            pos_hint: {'center_x': 0.5, 'top': 0.94}
 
         Label:
             id: crystals
@@ -17,12 +17,12 @@
             pos_hint: {'center_x': 0.5, 'top': 0.88}
 
         Image:
-            id: avatar_img
-            allow_stretch: True
-            keep_ratio: True
+            id: avatar
             size_hint: None, None
             size: dp(192), dp(192)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.68}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.62}
+            allow_stretch: True
+            keep_ratio: True
 
         BoxLayout:
             orientation: 'vertical'
@@ -34,23 +34,15 @@
             Button:
                 text: "Study"
                 on_release: app.go_study()
-
             Button:
                 text: "Gacha"
                 on_release: app.go_gacha()
-
             Button:
                 text: "Inventory"
                 on_release: app.go_inventory()
-
             Button:
                 text: "Settings"
                 on_release: app.go_settings()
-
-            Button:
-                text: "Gender Select"
-                on_release: app.go_gender()
-
             Button:
                 text: "Logout"
                 on_release: app.logout()

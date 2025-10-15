@@ -1,6 +1,6 @@
 import os, io
 from pathlib import Path
-os.environ["KIVY_NO_ARGS"] = "1"
+os.environ["KIVY_NO_ARGS"]="1"
 APP_DIR = Path(__file__).resolve().parent
 try: os.chdir(APP_DIR)
 except Exception: pass
@@ -10,265 +10,236 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
-from kivy.graphics import Rectangle, Color, InstructionGroup
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
-from kivy.core.window import Window
-from kivy.properties import StringProperty, ObjectProperty, NumericProperty, ListProperty
+from kivy.graphics import Rectangle, Color, InstructionGroup
 from kivy.core.image import Image as CoreImage
-from kivy.uix.video import Video
 from kivy.animation import Animation
+from kivy.properties import StringProperty, NumericProperty, ListProperty
 
 from sprite_renderer_ref import SpriteRendererRef
 from studysaga import db as dbmod
 from studysaga import auth as authmod
 
-class VideoBackground(Widget):
-    def __init__(self, source:str, **kwargs):
-        super().__init__(**kwargs)
-        self.video = Video(source=source, state='stop', options={'eof':'loop'})
-        self.video.allow_stretch = True
-        self.video.keep_ratio = False
-        self.video.volume = 0.0
-        self.add_widget(self.video)
-        self.bind(size=self._sync, pos=self._sync)
-        Clock.schedule_once(lambda *_: self._start(), 0)
-    def _sync(self, *a):
-        self.video.size = self.size
-        self.video.pos = self.pos
-    def _start(self):
-        try:
-            self.video.state = 'play'
-        except Exception as e:
-            print("[WARN] Video play failed:", e)
-
-class ProceduralBackground(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+# -------- Background --------
+class Starfield(Widget):
+    def __init__(self, **kw):
+        super().__init__(**kw)
         self._t = 0.0
-        self._instr = InstructionGroup()
-        self.canvas.add(self._instr)
-        self._stars = [(i*37 % 1000, (i*97)%600, (0.6+0.4*((i*53)%10)/10.0)) for i in range(220)]
+        self._instr = InstructionGroup(); self.canvas.add(self._instr)
+        import random
+        self._stars = [(random.random(), random.random(), 0.6+0.4*random.random()) for _ in range(240)]
         Clock.schedule_interval(self._tick, 1/60)
-        self.bind(pos=self._redraw, size=self._redraw)
-    def _redraw(self, *a): self._tick(0)
-    def _tick(self, dt):
+        self.bind(pos=self._tick, size=self._tick)
+    def _tick(self, *a):
         import math
-        self._t += dt
-        w, h = self.width, self.height
+        self._t += 0.016
+        w,h = max(1,self.width), max(1,self.height)
         self._instr.clear()
-        Color(0.03,0.04,0.06,1.0); Rectangle(pos=self.pos, size=self.size)
+        Color(0.03,0.04,0.06,1); Rectangle(pos=self.pos, size=self.size)
         for i in range(4):
-            amp = 20+ i*10
-            y = self.y + h*(0.2 + 0.15*i) + math.sin(self._t*0.6 + i)*amp
-            a = 0.08 + i*0.03
-            Color(0.35,0.55,0.95, a)
-            Rectangle(pos=(self.x, y), size=(w, h*0.12))
+            amp = 18 + i*10; a = 0.07 + i*0.03
+            y = self.y + h*(0.2 + 0.15*i) + math.sin(self._t*0.5 + i)*amp
+            Color(0.35,0.55,0.95, a); Rectangle(pos=(self.x, y), size=(w, h*0.12))
         for i,(sx,sy,tw) in enumerate(self._stars):
-            px = (self.x + ((sx + self._t*20) % max(w,1)))
-            py = self.y + (sy % max(h,1))
+            px = self.x + ((sx*w + self._t*20) % w); py = self.y + (sy*h)
             a = 0.15 + 0.25*abs(math.sin(self._t*tw + i))
             Color(0.8,0.9,1.0,a); Rectangle(pos=(px,py), size=(2,2))
 
+# -------- FX --------
 class GachaFX(Widget):
-    angle = NumericProperty(0)
-    scale = NumericProperty(1)
-    color = ListProperty([1,1,1,0.2])
-    def start_spin(self, rarity: str):
-        colors = {
-            "Common": (1,1,1,0.15),
-            "Rare": (0.6,0.8,1,0.25),
-            "Epic": (0.7,0.6,1,0.35),
-            "Legendary": (1,0.84,0.2,0.45),
-        }
-        self.color = colors.get(rarity, (1,1,1,0.2))
-        self.angle = 0
-        self.scale = 0.6
-        a1 = Animation(angle=360, scale=1.2, d=0.6, t='out_cubic')
-        a2 = Animation(angle=720, scale=1.0, d=0.6, t='out_back')
-        (a1 + a2).start(self)
+    angle = NumericProperty(0); scale = NumericProperty(1); color = ListProperty([1,1,1,0.2])
+    def burst(self, rarity="Common"):
+        colors = {"Common":(1,1,1,0.15),"Rare":(0.6,0.8,1,0.25),"Epic":(0.7,0.6,1,0.35),"Legendary":(1,0.84,0.2,0.45)}
+        self.color = colors.get(rarity,(1,1,1,0.2)); self.angle = 0; self.scale = 0.6
+        (Animation(angle=360, scale=1.2, d=0.5, t='out_cubic') + Animation(angle=720, scale=1.0, d=0.5, t='out_back')).start(self)
 
+# -------- Screens --------
 class AuthScreen(Screen):
     status = StringProperty("")
     status_msg = StringProperty("")
-    def on_status(self, *a): 
-        if self.status_msg != self.status: self.status_msg = self.status
-    def on_status_msg(self, *a):
-        if self.status != self.status_msg: self.status = self.status_msg
-
 class HomeScreen(Screen): pass
-class StudyScreen(Screen): status = StringProperty("")
-class GachaScreen(Screen): status = StringProperty(""); result_image = ObjectProperty(None)
+class StudyScreen(Screen):
+    status = StringProperty("Timer: 00:00")
+class GachaScreen(Screen):
+    status = StringProperty("")
 class InventoryScreen(Screen): pass
 class SettingsScreen(Screen): pass
-class GenderSelectScreen(Screen): pass
 
-# Load kv files
-for rel in ("ui/auth.kv","ui/home.kv","ui/study.kv","ui/gacha.kv","ui/inventory.kv","ui/settings.kv","ui/gender_select.kv"):
+# Load KV
+for rel in ("ui/auth.kv","ui/home.kv","ui/study.kv","ui/gacha.kv","ui/inventory.kv","ui/settings.kv"):
     p = APP_DIR/rel
     if p.exists(): Builder.load_file(str(p))
 
 class StudySagaApp(App):
-    session_token = None; username = None; user_id = None
+    session_token=None; username=None; user_id=None
+    inv_slot = "hair"
     def build(self):
-        Window.clearcolor = (0,0,0,1)
-        try: dbmod.bootstrap(); dbmod.cleanup_expired_sessions(30)
-        except Exception as e: print("[WARN] DB bootstrap:", e)
+        dbmod.bootstrap(); dbmod.cleanup_expired_sessions(30)
         root = FloatLayout()
-        self.sm = ScreenManager(transition=NoTransition(), size_hint=(1,1), pos=(0,0))
-
+        self.sm = ScreenManager(transition=NoTransition())
         for name, cls in [("auth",AuthScreen),("home",HomeScreen),("study",StudyScreen),
-                          ("gacha",GachaScreen),("inventory",InventoryScreen),
-                          ("settings",SettingsScreen),("gender",GenderSelectScreen)]:
+                          ("gacha",GachaScreen),("inventory",InventoryScreen),("settings",SettingsScreen)]:
             self.sm.add_widget(cls(name=name))
-
-        # Background layer: try video; else procedural
-        bg_path = str((APP_DIR / "assets" / "bg.mov").resolve())
-        try:
-            if os.path.exists(bg_path):
-                root.add_widget(VideoBackground(source=bg_path, size_hint=(1,1)))
-            else:
-                raise FileNotFoundError
-        except Exception:
-            root.add_widget(ProceduralBackground(size_hint=(1,1)))
-
+        root.add_widget(Starfield(size_hint=(1,1)))
         root.add_widget(self.sm)
         return root
 
-    def _set_auth_status(self, msg:str):
-        try: self.sm.get_screen("auth").status = msg
-        except Exception: pass
+    # Auth
+    def signup(self, u,p,nick,gender):
+        u=(u or "").strip(); p=(p or "").strip(); nick=(nick or "").strip()
+        ok,msg = authmod.register(u,p)
+        if not ok:
+            self.sm.get_screen("auth").status = f"[color=ffcc66]Sign-up failed: {msg}[/color]"; return
+        uid = self._uid_by_name(u)
+        if uid:
+            dbmod.set_gender(uid, "female" if gender=="female" else "male")
+            if nick: dbmod.set_nickname(uid, nick)
+        self.sm.get_screen("auth").status = "[color=66ff99]Sign-up success. Please login.[/color]"
 
+    def login(self, u,p):
+        ok,tok = authmod.login((u or "").strip(), (p or "").strip())
+        if not ok:
+            self.sm.get_screen("auth").status = "[color=ff6666]Login failed[/color]"; return
+        self.session_token = tok; self.username=u
+        self.user_id = dbmod.get_user_id_by_token(self.session_token)
+        self.go_home()
+
+    def _uid_by_name(self, u):
+        try:
+            con = dbmod._get_conn(); cur = con.cursor()
+            cur.execute("SELECT id FROM users WHERE username=?", (u,))
+            r=cur.fetchone(); con.close(); return r[0] if r else None
+        except Exception: return None
+
+    # Nav
+    def go_home(self):
+        self.sm.current="home"; Clock.schedule_once(lambda *_: self._refresh_home(),0)
+    def go_study(self): self.sm.current="study"
+    def go_gacha(self):
+        self.sm.current="gacha"
+        scr=self.sm.get_screen("gacha")
+        scr.ids.crystals.text = f"Crystals: {dbmod.get_crystals(self.user_id)}"
+    def go_inventory(self):
+        self.sm.current="inventory"; Clock.schedule_once(lambda *_: self.inv_select(self.inv_slot),0)
+    def go_settings(self):
+        self.sm.current="settings"
+        scr=self.sm.get_screen("settings")
+        g,nick = dbmod.get_profile(self.user_id)
+        scr.ids.nick_input.text = nick or ""
+        scr.ids.gender_male.state = "down" if g=="male" else "normal"
+        scr.ids.gender_female.state = "down" if g=="female" else "normal"
+    def logout(self): self.session_token=None; self.username=None; self.user_id=None; self.sm.current="auth"
+
+    # Home avatar
     def _refresh_home(self):
         if self.user_id is None: return
         try:
             home = self.sm.get_screen("home")
-            if hasattr(home,"ids"):
-                if "crystals" in home.ids:
-                    home.ids["crystals"].text = f"Crystals: {dbmod.get_crystals(self.user_id)}"
-                if "welcome" in home.ids and self.username:
-                    gender, nick = dbmod.get_profile(self.user_id)
-                    title = nick or self.username
-                    home.ids["welcome"].text = f"Welcome, {title}!"
-                if "avatar_img" in home.ids:
-                    gender, _nick = dbmod.get_profile(self.user_id)
-                    loadout = dbmod.get_loadout(self.user_id)
-                    r = SpriteRendererRef(pixel_scale=6); r.set_gender(gender)
-                    for slot,item in loadout.items(): r.set_layer(slot, item)
-                    buf = io.BytesIO(); r.render().save(buf, format="PNG"); buf.seek(0)
-                    home.ids["avatar_img"].texture = CoreImage(buf, ext="png").texture
-        except Exception as e:
-            print("[WARN] _refresh_home:", e)
-
-    # auth
-    def signup(self, username, password, nickname, gender):
-        u=(username or "").strip(); p=(password or "").strip()
-        n=(nickname or "").strip(); g=(gender or "male").strip().lower()
-        if not u or not p:
-            self._set_auth_status("[color=ffcc66]Enter username & password[/color]"); return
-        ok,msg = authmod.register(u,p)
-        if not ok:
-            self._set_auth_status(f"[color=ff6666]Sign-up failed: {msg}[/color]"); return
-        # set profile
-        con_uid = self._get_user_id(u)  # local helper
-        if con_uid:
-            dbmod.set_gender(con_uid, g if g in ("male","female") else "male")
-            if n: dbmod.set_nickname(con_uid, n)
-        self._set_auth_status("[color=66ff99]Sign-up success. Now login.[/color]")
-
-    def _get_user_id(self, username):
-        # resolve user id from username
-        try:
-            con = dbmod._get_conn(); cur = con.cursor()
-            cur.execute("SELECT id FROM users WHERE username=?", (username,))
-            row = cur.fetchone(); con.close()
-            return row[0] if row else None
-        except Exception: return None
-
-    def login(self, username, password):
-        u=(username or "").strip(); p=(password or "").strip()
-        if not u or not p: self._set_auth_status("[color=ffcc66]Enter username & password[/color]"); return
-        ok, tok_or_msg = authmod.login(u,p)
-        if ok:
-            self.session_token = tok_or_msg; self.username = u; self.user_id = dbmod.get_user_id_by_token(self.session_token)
-            self._set_auth_status("[color=66ff99]Login success![/color]"); self.go_home()
-        else: self._set_auth_status(f"[color=ff6666]Login failed: {tok_or_msg}[/color]")
-
-    # nav
-    def go_home(self): self.sm.current="home"; self._refresh_home()
-    def go_study(self): self.sm.current="study"
-    def go_gacha(self):
-        self.sm.current="gacha"
-        try:
-            scr = self.sm.get_screen("gacha")
-            if "crystals" in scr.ids: scr.ids["crystals"].text = f"Crystals: {dbmod.get_crystals(self.user_id)}"
-        except Exception: pass
-    def go_inventory(self):
-        self.sm.current="inventory"
-        try:
-            inv = dbmod.list_inventory(self.user_id); scr = self.sm.get_screen("inventory")
-            from kivy.uix.button import Button
-            def add_many(box_id, items, slot):
-                box = scr.ids.get(box_id); 
-                if not box: return
-                box.clear_widgets()
-                for it in items:
-                    btn = Button(text=it, size_hint=(None,None), size=(120,40))
-                    btn.bind(on_release=lambda b,i=it: self.equip(slot,i))
-                    box.add_widget(btn)
-            for s,box in [("hair","hair_box"),("top","top_box"),("bottom","bottom_box"),("shoes","shoes_box"),("accessory","acc_box")]:
-                add_many(box, inv.get(s, []), s)
-        except Exception as e:
-            print("[WARN] inventory populate:", e)
-    def go_settings(self): self.sm.current="settings"
-    def go_gender(self): self.sm.current="gender"
-    def logout(self):
-        self.session_token=None; self.username=None; self.user_id=None; self.sm.current="auth"
-
-    # gacha / equip / gender
-    def gacha_roll(self):
-        if self.user_id is None: return
-        ok, slot, item, crystals, rarity = dbmod.gacha_roll_once(self.user_id)
-        scr = self.sm.get_screen("gacha")
-        try:
-            if hasattr(scr.ids, "fx") and scr.ids.get("fx"):
-                scr.ids["fx"].start_spin(rarity)
-        except Exception as e:
-            print("[WARN] gacha fx:", e)
-        scr.status = (f"[color=66ff99]{rarity} {slot}: {item}[/color]" if ok else "[color=ff6666]Not enough crystals.[/color]")
-        try:
-            if "crystals" in scr.ids: scr.ids["crystals"].text = f"Crystals: {crystals}"
-            from PIL import Image
-            r = SpriteRendererRef(pixel_scale=6)
-            gender, _ = dbmod.get_profile(self.user_id)
-            r.set_gender(gender)
-            r.set_layer(slot, item)
+            g,nick = dbmod.get_profile(self.user_id)
+            home.ids.welcome.text = f"Welcome, {(nick or self.username)}!"
+            home.ids.crystals.text = f"Crystals: {dbmod.get_crystals(self.user_id)}"
+            loadout = dbmod.get_loadout(self.user_id)
+            r = SpriteRendererRef(scale=6); r.set_gender(g)
+            for s,i in loadout.items():
+                if i: r.set_layer(s,i)
+            if not any(loadout.values()):
+                items = dbmod.default_items()
+                starter = {"hair": items["hair"][0], "top": items["top"][0], "bottom": items["bottom"][0], "shoes": items["shoes"][0]}
+                for s,i in starter.items(): dbmod.set_loadout(self.user_id,s,i); r.set_layer(s,i)
             buf = io.BytesIO(); r.render().save(buf, format="PNG"); buf.seek(0)
-            tex = CoreImage(buf, ext="png").texture
-            if "result_img" in scr.ids: scr.ids["result_img"].texture = tex
-        except Exception: pass
-        self._refresh_home()
+            home.ids.avatar.texture = CoreImage(buf, ext="png").texture
+        except Exception as e:
+            print("[WARN] refresh_home:", e)
 
-    def gacha_roll_10(self):
-        if self.user_id is None: return
-        ok, results, crystals = dbmod.gacha_roll_ten(self.user_id)
-        scr = self.sm.get_screen("gacha")
-        if not ok:
-            scr.status = "[color=ff6666]Not enough crystals for 10x.[/color]"
-        else:
-            summary = ", ".join([f"{r}:{s}" for (s, _i, r) in results[:3]]) + (" ..." if len(results)>3 else "")
-            scr.status = f"[color=66ff99]10x result: {summary}[/color]"
-        try:
-            if "crystals" in scr.ids: scr.ids["crystals"].text = f"Crystals: {crystals}"
-        except Exception: pass
-        self._refresh_home()
+    # Study
+    def study_start(self):
+        scr = self.sm.get_screen("study")
+        self._study_t = 0; self._study_ev = Clock.schedule_interval(self._study_tick, 1.0)
+        scr.status = "Timer: 00:00"
+    def study_pause(self):
+        if getattr(self,'_study_ev',None): self._study_ev.cancel(); self._study_ev=None
+    def _study_tick(self, dt):
+        self._study_t = getattr(self,'_study_t',0)+1
+        m,s = divmod(self._study_t,60)
+        scr = self.sm.get_screen("study"); scr.status = f"Timer: {m:02d}:{s:02d}"
+        if self._study_t % 60 == 0 and self.user_id:
+            cur = dbmod.get_crystals(self.user_id); dbmod.set_crystals(self.user_id, cur+5)
+            self._refresh_home()
 
-    def equip(self, slot, item):
-        if self.user_id is None: return
+    # Inventory
+    def inv_select(self, slot):
+        self.inv_slot = slot
+        scr = self.sm.get_screen("inventory")
+        grid = scr.ids.grid; grid.clear_widgets()
+        inv = dbmod.list_inventory(self.user_id)
+        items = inv.get(slot, [])
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.image import Image
+        from kivy.uix.button import Button
+        if not items:
+            # show some defaults as disabled preview
+            for name in dbmod.default_items()[slot][:12]:
+                cell = BoxLayout(orientation='vertical', size_hint_y=None, height='120dp', padding=5, spacing=4)
+                # thumbnail
+                buf = io.BytesIO(); r = SpriteRendererRef(scale=4); g,_ = dbmod.get_profile(self.user_id); r.set_gender(g); r.set_layer(slot,name)
+                r.render().save(buf, format="PNG"); buf.seek(0)
+                cell.add_widget(Image(texture=CoreImage(buf, ext="png").texture, size_hint=(1,None), height='84dp'))
+                cell.add_widget(Button(text="Not owned", disabled=True, size_hint=(1,None), height='28dp'))
+                grid.add_widget(cell)
+            return
+        for name in items:
+            cell = BoxLayout(orientation='vertical', size_hint_y=None, height='120dp', padding=5, spacing=4)
+            buf = io.BytesIO(); r = SpriteRendererRef(scale=4); g,_ = dbmod.get_profile(self.user_id); r.set_gender(g); r.set_layer(slot,name)
+            r.render().save(buf, format="PNG"); buf.seek(0)
+            cell.add_widget(Image(texture=CoreImage(buf, ext="png").texture, size_hint=(1,None), height='84dp'))
+            b = Button(text="Equip", size_hint=(1,None), height='28dp')
+            b.bind(on_release=lambda btn, s=slot, it=name: self._equip(s,it))
+            cell.add_widget(b); grid.add_widget(cell)
+    def _equip(self, slot, item):
         dbmod.set_loadout(self.user_id, slot, item); self._refresh_home()
 
-    def set_gender(self, gender):
+    # Gacha
+    def gacha_roll(self, times=1):
+        scr = self.sm.get_screen("gacha")
+        if times==1:
+            ok, res, crystals = dbmod.roll_once(self.user_id)
+            if not ok: scr.status = "[color=ff6666]Not enough crystals[/color]"; return
+            slot,item,rarity = res
+            scr.ids.fx.burst(rarity); self._animate_chest(rarity); self._show_item_preview(slot,item)
+            scr.ids.crystals.text = f"Crystals: {crystals}"
+        else:
+            ok, results, crystals = dbmod.roll_ten(self.user_id)
+            if not ok: scr.status = "[color=ff6666]Not enough crystals for 10x[/color]"; return
+            scr.ids.fx.burst("Epic"); self._animate_chest("Epic")
+            if results: slot,item,rarity = results[0]; self._show_item_preview(slot,item)
+            scr.ids.crystals.text = f"Crystals: {crystals}"
+        self._refresh_home()
+
+    def _show_item_preview(self, slot, item):
+        scr = self.sm.get_screen("gacha")
+        g,_ = dbmod.get_profile(self.user_id); r = SpriteRendererRef(scale=5); r.set_gender(g); r.set_layer(slot,item)
+        buf = io.BytesIO(); r.render().save(buf, format="PNG"); buf.seek(0)
+        scr.ids.result.texture = CoreImage(buf, ext="png").texture
+        scr.status = f"[color=66ff99]New {slot}: {item}[/color]"
+
+    def _animate_chest(self, rarity="Common"):
+        scr = self.sm.get_screen("gacha")
+        gl = scr.ids.glow; gl.opacity = 0.0; gl.scale = 0.8
+        col = {"Common":(1,1,1,0.25),"Rare":(0.6,0.8,1,0.35),"Epic":(0.7,0.6,1,0.45),"Legendary":(1,0.84,0.2,0.6)}.get(rarity,(1,1,1,0.3))
+        gl.color = col; Animation(opacity=1.0, scale=1.1, d=0.25).start(gl)
+        chest = scr.ids.chest
+        a1 = Animation(scale=1.05, d=0.15, t='out_back'); a2 = Animation(scale=1.0, d=0.1)
+        def open_lid(*_): chest.source = "assets/chest_open.png"
+        a1.bind(on_complete=lambda *_: open_lid()); (a1 + a2).start(chest)
+
+    # Settings
+    def save_settings(self, nickname, male_state, female_state):
         if self.user_id is None: return
-        dbmod.set_gender(self.user_id, gender); self._refresh_home()
+        nick = (nickname or "").strip()
+        if nick: dbmod.set_nickname(self.user_id, nick)
+        if female_state=='down': dbmod.set_gender(self.user_id, "female")
+        elif male_state=='down': dbmod.set_gender(self.user_id, "male")
+        self._refresh_home()
 
 if __name__ == "__main__":
     StudySagaApp().run()

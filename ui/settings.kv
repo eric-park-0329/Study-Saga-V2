@@ -7,16 +7,71 @@
         Label:
             text: "Settings"
             font_size: '26sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.9}
+            pos_hint: {'center_x': 0.5, 'top': 0.92}
 
-        Label:
-            text: "More settings coming soon"
-            font_size: '18sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.8}
+        GridLayout:
+            cols: 2
+            size_hint: 0.8, None
+            height: dp(220)
+            row_default_height: dp(44)
+            row_force_default: True
+            spacing: dp(8)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.55}
 
-        Button:
-            text: "Back"
-            size_hint: 0.2, None
-            height: dp(44)
-            pos_hint: {'center_x': 0.5, 'y': 0.05}
-            on_release: app.go_home()
+            Label:
+                text: "Nickname"
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            TextInput:
+                id: nick_input
+                hint_text: 'Nickname'
+                multiline: False
+
+            Label:
+                text: "Gender"
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            BoxLayout:
+                spacing: dp(8)
+                ToggleButton:
+                    id: gender_male
+                    text: "Male"
+                    group: "gender2"
+                ToggleButton:
+                    id: gender_female
+                    text: "Female"
+                    group: "gender2"
+
+            Label:
+                text: "BGM Volume"
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Slider:
+                min: 0
+                max: 100
+                value: 60
+
+            Label:
+                text: "SFX Volume"
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+            Slider:
+                min: 0
+                max: 100
+                value: 80
+
+        BoxLayout:
+            size_hint: 0.6, None
+            height: dp(48)
+            spacing: dp(10)
+            pos_hint: {'center_x': 0.5, 'y': 0.12}
+            Button:
+                text: "Save"
+                on_release: app.save_settings(nick_input.text, gender_male.state, gender_female.state)
+            Button:
+                text: "Back"
+                on_release: app.go_home()

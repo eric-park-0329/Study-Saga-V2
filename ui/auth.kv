@@ -15,21 +15,17 @@
     FloatLayout:
         size: root.size
 
-        # 1) Title (맨 위, 최상단에 그려지도록 폼보다 '아래'가 아니라 '위'에 위치)
         Label:
             text: "[b]Study Saga[/b]"
             markup: True
-            font_size: '30sp'
-            size_hint: None, None
-            size: self.texture_size
+            font_size: '32sp'
             pos_hint: {'center_x': 0.5, 'top': 0.94}
 
-        # 2) Status message (타이틀 바로 아래)
         Label:
             text: root.status or root.status_msg
             markup: True
             font_size: '14sp'
-            color: 1, 0.85, 0.4, 1
+            color: 1,0.85,0.4,1
             size_hint: 0.9, None
             height: dp(24)
             pos_hint: {'center_x': 0.5, 'top': 0.88}
@@ -37,7 +33,6 @@
             valign: 'middle'
             text_size: self.size
 
-        # 3) Form (2열), 화면 중앙보다 약간 위
         BoxLayout:
             orientation: 'horizontal'
             size_hint: 0.86, None
@@ -45,14 +40,12 @@
             spacing: dp(24)
             pos_hint: {'center_x': 0.5, 'center_y': 0.58}
 
-            # Left labels
             GridLayout:
                 cols: 1
                 size_hint_x: 0.34
                 row_default_height: dp(48)
                 row_force_default: True
                 spacing: dp(8)
-
                 Label:
                     text: "Username"
                     halign: 'left'
@@ -74,30 +67,25 @@
                     valign: 'middle'
                     text_size: self.size
 
-            # Right inputs
             GridLayout:
                 cols: 1
                 size_hint_x: 0.66
                 row_default_height: dp(48)
                 row_force_default: True
                 spacing: dp(8)
-
                 TextInput:
                     id: username
                     hint_text: 'Username'
                     multiline: False
-
                 TextInput:
                     id: password
                     hint_text: 'Password'
                     password: True
                     multiline: False
-
                 TextInput:
                     id: nickname
                     hint_text: 'Nickname (optional)'
                     multiline: False
-
                 BoxLayout:
                     spacing: dp(8)
                     ToggleButton:
@@ -110,17 +98,14 @@
                         text: "Female"
                         group: "gender"
 
-        # 4) Bottom buttons (항상 하단)
         BoxLayout:
             size_hint: 0.7, None
             height: dp(52)
             spacing: dp(14)
             pos_hint: {'center_x': 0.5, 'y': 0.08}
-
             Button:
                 text: 'Login'
                 on_release: app.login(username.text, password.text)
-
             Button:
                 text: 'Sign up'
                 on_release: app.signup(username.text, password.text, nickname.text, 'female' if female_btn.state=='down' else 'male')

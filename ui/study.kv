@@ -7,16 +7,24 @@
         Label:
             text: "Study Session"
             font_size: '26sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.9}
+            pos_hint: {'center_x': 0.5, 'top': 0.88}
 
         Label:
-            text: root.status or "Timer: 00:00"
+            text: root.status
             font_size: '18sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.82}
+            pos_hint: {'center_x': 0.5, 'top': 0.8}
 
-        Button:
-            text: "Back"
-            size_hint: 0.2, None
-            height: dp(44)
-            pos_hint: {'center_x': 0.5, 'y': 0.05}
-            on_release: app.go_home()
+        BoxLayout:
+            size_hint: 0.6, None
+            height: dp(48)
+            spacing: dp(10)
+            pos_hint: {'center_x': 0.5, 'y': 0.12}
+            Button:
+                text: "Start"
+                on_release: app.study_start()
+            Button:
+                text: "Pause"
+                on_release: app.study_pause()
+            Button:
+                text: "Back"
+                on_release: app.go_home()

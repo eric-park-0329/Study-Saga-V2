@@ -9,102 +9,55 @@
             font_size: '26sp'
             pos_hint: {'center_x': 0.5, 'top': 0.95}
 
-        GridLayout:
-            cols: 1
-            size_hint: 0.9, 0.7
-            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            row_default_height: dp(90)
-            row_force_default: False
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, 0.7
+            width: dp(140)
             spacing: dp(6)
+            pos_hint: {'x': 0.06, 'center_y': 0.5}
+            Button:
+                text: "Hair"
+                on_release: app.inv_select("hair")
+            Button:
+                text: "Top"
+                on_release: app.inv_select("top")
+            Button:
+                text: "Bottom"
+                on_release: app.inv_select("bottom")
+            Button:
+                text: "Shoes"
+                on_release: app.inv_select("shoes")
+            Button:
+                text: "Accessory"
+                on_release: app.inv_select("accessory")
 
-            BoxLayout:
-                orientation: 'vertical'
-                Label:
-                    text: "[b]Hair[/b]"
-                    markup: True
-                    font_size: '18sp'
-                ScrollView:
-                    do_scroll_x: True
-                    do_scroll_y: False
-                    BoxLayout:
-                        id: hair_box
-                        height: dp(64)
-                        size_hint_y: None
-                        size_hint_x: None
-                        width: self.minimum_width
-                        spacing: dp(6)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 0.66, 0.7
+            spacing: dp(6)
+            pos_hint: {'right': 0.94, 'center_y': 0.5}
 
-            BoxLayout:
-                orientation: 'vertical'
-                Label:
-                    text: "[b]Top[/b]"
-                    markup: True
-                    font_size: '18sp'
-                ScrollView:
-                    do_scroll_x: True
-                    do_scroll_y: False
-                    BoxLayout:
-                        id: top_box
-                        height: dp(64)
-                        size_hint_y: None
-                        size_hint_x: None
-                        width: self.minimum_width
-                        spacing: dp(6)
+            Label:
+                text: "Tap an item to equip"
+                font_size: '16sp'
+                size_hint_y: None
+                height: dp(24)
 
-            BoxLayout:
-                orientation: 'vertical'
-                Label:
-                    text: "[b]Bottom[/b]"
-                    markup: True
-                    font_size: '18sp'
-                ScrollView:
-                    do_scroll_x: True
-                    do_scroll_y: False
-                    BoxLayout:
-                        id: bottom_box
-                        height: dp(64)
-                        size_hint_y: None
-                        size_hint_x: None
-                        width: self.minimum_width
-                        spacing: dp(6)
-
-            BoxLayout:
-                orientation: 'vertical'
-                Label:
-                    text: "[b]Shoes[/b]"
-                    markup: True
-                    font_size: '18sp'
-                ScrollView:
-                    do_scroll_x: True
-                    do_scroll_y: False
-                    BoxLayout:
-                        id: shoes_box
-                        height: dp(64)
-                        size_hint_y: None
-                        size_hint_x: None
-                        width: self.minimum_width
-                        spacing: dp(6)
-
-            BoxLayout:
-                orientation: 'vertical'
-                Label:
-                    text: "[b]Accessory[/b]"
-                    markup: True
-                    font_size: '18sp'
-                ScrollView:
-                    do_scroll_x: True
-                    do_scroll_y: False
-                    BoxLayout:
-                        id: acc_box
-                        height: dp(64)
-                        size_hint_y: None
-                        size_hint_x: None
-                        width: self.minimum_width
-                        spacing: dp(6)
+            ScrollView:
+                do_scroll_y: True
+                do_scroll_x: False
+                GridLayout:
+                    id: grid
+                    cols: 4
+                    size_hint_y: None
+                    height: self.minimum_height
+                    row_default_height: dp(120)
+                    row_force_default: False
+                    spacing: dp(8)
 
         Button:
             text: "Back"
             size_hint: 0.2, None
             height: dp(44)
-            pos_hint: {'center_x': 0.5, 'y': 0.04}
+            pos_hint: {'center_x': 0.5, 'y': 0.05}
             on_release: app.go_home()
