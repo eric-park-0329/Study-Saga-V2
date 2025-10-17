@@ -148,6 +148,9 @@ class StudySagaApp(App):
         
     def study_start(self, minutes):
         print(f"Study session: {minutes} minutes")
+    
+    def study_stop(self):
+        print("Study session stopped")
         
     def do_gacha(self, tier):
         print(f"Gacha roll: {tier}")
