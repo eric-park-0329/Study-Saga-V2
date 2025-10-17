@@ -1,0 +1,56 @@
+#:kivy 2.3.0
+<GachaScreen>:
+    name: "gacha"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        Label:
+            text: "Gacha  \u2022  Crystals: {}".format(app.crystals)
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"top":0.95}
+            size_hint: 1, None
+            height: dp(40)
+        BoxLayout:
+            size_hint: 0.92, None
+            height: dp(50)
+            pos_hint: {"center_x":0.5,"center_y":0.68}
+            spacing: dp(10)
+            Button:
+                text: "Bronze (10)"
+                on_release: app.do_gacha('bronze')
+                background_color: app.theme.bronze
+                color: app.theme.text
+            Button:
+                text: "Silver (30)"
+                on_release: app.do_gacha('silver')
+                background_color: app.theme.silver
+                color: 0,0,0,1
+            Button:
+                text: "Gold (60)"
+                on_release: app.do_gacha('gold')
+                background_color: app.theme.gold
+                color: 0,0,0,1
+        Label:
+            id: pity
+            text: ""
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.60}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+        Widget:
+            id: card_stage
+            size_hint: 0.72, 0.36
+            pos_hint: {"center_x":0.5,"center_y":0.40}
+        Label:
+            id: result
+            text: ""
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.18}
+            halign: "center"
+            valign: "middle"
+            text_size: self.size

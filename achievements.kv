@@ -1,0 +1,27 @@
+#:kivy 2.3.0
+<AchievementsScreen>:
+    name: "achievements"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12)
+        spacing: dp(10)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            Label:
+                text: "Achievements"
+                color: app.theme.text
+        ScrollView:
+            GridLayout:
+                id: grid
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                row_default_height: dp(60)
+                row_force_default: True

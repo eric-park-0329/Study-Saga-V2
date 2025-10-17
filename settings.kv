@@ -1,0 +1,92 @@
+#:kivy 2.3.0
+<SettingsScreen>:
+    name: "settings"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12)
+        spacing: dp(10)
+        Label:
+            text: "Settings"
+            color: app.theme.text
+            size_hint_y: None
+            height: dp(36)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Label:
+                text: "Nickname"
+                color: app.theme.text
+                size_hint_x: 0.3
+            TextInput:
+                id: nick
+                multiline: False
+                foreground_color: app.theme.text
+                background_color: app.theme.card
+                cursor_color: app.theme.text
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Label:
+                text: "Gender"
+                color: app.theme.text
+                size_hint_x: 0.3
+            ToggleButton:
+                id: male
+                text: "Male"
+                group: "gender"
+                background_color: app.theme.card
+                color: app.theme.text
+            ToggleButton:
+                id: female
+                text: "Female"
+                group: "gender"
+                state: "down"
+                background_color: app.theme.card
+                color: app.theme.text
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Label:
+                text: "Dark Mode"
+                color: app.theme.text
+                size_hint_x: 0.3
+            Switch:
+                id: dark
+                active: False
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Label:
+                text: "Daily Goal (min)"
+                color: app.theme.text
+                size_hint_x: 0.4
+            Slider:
+                id: goal
+                min: 15
+                max: 300
+                step: 5
+                value: 60
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(8)
+            Button:
+                text: "Save"
+                on_release: app.save_settings(nick.text, male.state, female.state, dark.active, int(goal.value))
+                background_color: app.theme.accent
+                color: app.theme.accent_text
+            Button:
+                text: "Back"
+                on_release: app.go("home")
+                background_color: app.theme.card
+                color: app.theme.text

@@ -1,0 +1,63 @@
+#:kivy 2.3.0
+<AuthScreen>:
+    name: "auth"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        Label:
+            text: "StudySaga"
+            pos_hint: {"center_x":0.5,"top":0.95}
+            size_hint: 0.6, None
+            height: dp(60)
+            color: app.theme.text
+            font_size: "36sp"
+            markup: True
+        TextInput:
+            id: email
+            hint_text: "Email"
+            size_hint: 0.7, None
+            height: dp(44)
+            pos_hint: {"center_x":0.5,"center_y":0.62}
+            multiline: False
+            foreground_color: app.theme.text
+            background_color: app.theme.card
+            cursor_color: app.theme.text
+        TextInput:
+            id: pw
+            hint_text: "Password"
+            size_hint: 0.7, None
+            height: dp(44)
+            pos_hint: {"center_x":0.5,"center_y":0.52}
+            password: True
+            multiline: False
+            foreground_color: app.theme.text
+            background_color: app.theme.card
+            cursor_color: app.theme.text
+        BoxLayout:
+            size_hint: 0.7, None
+            height: dp(44)
+            spacing: dp(10)
+            pos_hint: {"center_x":0.5,"center_y":0.42}
+            Button:
+                text: "Login"
+                on_release: app.do_login(email.text, pw.text)
+                background_color: app.theme.accent
+                color: app.theme.accent_text
+            Button:
+                text: "Register"
+                on_release: app.do_register(email.text, pw.text)
+                background_color: app.theme.card
+                color: app.theme.text
+        Label:
+            id: msg
+            text: ""
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.34}
+            size_hint: 0.8, None
+            halign: "center"
+            valign: "middle"
+            text_size: self.size

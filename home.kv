@@ -1,0 +1,72 @@
+#:kivy 2.3.0
+<HomeScreen>:
+    name: "home"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        Label:
+            id: hello
+            text: "Hi, {}!  ✨  Crystals: {}".format(app.profile.get("nickname",""), app.crystals)
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"top":0.98}
+            size_hint: 1, None
+            height: dp(50)
+            font_size: "20sp"
+        Widget:
+            id: avatar_stage
+            size_hint: 0.45, 0.32
+            pos_hint: {"center_x":0.5,"center_y":0.6}
+        GridLayout:
+            cols: 3
+            spacing: dp(10)
+            size_hint: 0.92, None
+            height: self.minimum_height
+            pos_hint: {"center_x":0.5,"center_y":0.33}
+            Button:
+                text: "Study 📚"
+                on_release: app.go("study")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+            Button:
+                text: "Gacha 🎁"
+                on_release: app.go("gacha")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+            Button:
+                text: "Achievements 🏆"
+                on_release: app.go("achievements")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+            Button:
+                text: "Inventory 🎒"
+                on_release: app.go("inventory")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+            Button:
+                text: "Settings ⚙️"
+                on_release: app.go("settings")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+        BoxLayout:
+            size_hint: 0.9, None
+            height: dp(40)
+            pos_hint: {"center_x":0.5,"y":0.02}
+            spacing: dp(8)
+            Label:
+                id: today_goal
+                text: ""
+                color: app.theme.muted

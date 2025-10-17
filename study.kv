@@ -1,0 +1,90 @@
+#:kivy 2.3.0
+<StudyScreen>:
+    name: "study"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    FloatLayout:
+        Label:
+            text: "Study Session"
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"top":0.95}
+            size_hint: 1, None
+            height: dp(40)
+        BoxLayout:
+            size_hint: 0.9, None
+            height: dp(44)
+            spacing: dp(6)
+            pos_hint: {"center_x":0.5,"center_y":0.78}
+            Button:
+                text: "Pomodoro 25/5 ×4"
+                on_release: app.pomodoro_start(25,5,4)
+                background_color: app.theme.card
+                color: app.theme.text
+            Button:
+                text: "Quick 50"
+                on_release: app.study_start(50)
+                background_color: app.theme.card
+                color: app.theme.text
+            Button:
+                text: "Quick 90"
+                on_release: app.study_start(90)
+                background_color: app.theme.card
+                color: app.theme.text
+        Slider:
+            id: minutes
+            min: 5
+            max: 120
+            step: 5
+            value: 25
+            size_hint: 0.9, None
+            height: dp(40)
+            pos_hint: {"center_x":0.5,"center_y":0.66}
+        Label:
+            text: "Target: {} min".format(int(minutes.value))
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.60}
+            size_hint: 1, None
+            height: dp(28)
+        ProgressBar:
+            id: pbar
+            max: 1.0
+            value: 0.0
+            size_hint: 0.92, None
+            height: dp(24)
+            pos_hint: {"center_x":0.5,"center_y":0.50}
+        Label:
+            id: status
+            text: ""
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.43}
+            size_hint: 0.92, None
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+        BoxLayout:
+            id: weekbars
+            size_hint: 0.92, None
+            height: dp(20)
+            pos_hint: {"center_x":0.5,"center_y":0.30}
+            spacing: dp(5)
+        BoxLayout:
+            size_hint: 0.92, None
+            height: dp(44)
+            spacing: dp(10)
+            pos_hint: {"center_x":0.5,"center_y":0.18}
+            Button:
+                id: startbtn
+                text: "Start"
+                on_release: app.study_start(int(minutes.value))
+                background_color: app.theme.accent
+                color: app.theme.accent_text
+            Button:
+                id: stopbtn
+                text: "Stop"
+                on_release: app.study_stop()
+                background_color: app.theme.card
+                color: app.theme.text

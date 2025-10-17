@@ -1,0 +1,47 @@
+#:kivy 2.3.0
+<InventoryScreen>:
+    name: "inventory"
+    canvas.before:
+        Color:
+            rgba: app.theme.bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12)
+        spacing: dp(10)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(8)
+            Label:
+                text: "Inventory"
+                color: app.theme.text
+                size_hint_x: 0.35
+            TextInput:
+                id: search
+                hint_text: "Search item..."
+                multiline: False
+                background_color: app.theme.card
+                foreground_color: app.theme.text
+                cursor_color: app.theme.text
+            Spinner:
+                id: tier
+                text: "all"
+                values: ["all","bronze","silver","gold"]
+                size_hint_x: None
+                width: dp(110)
+            Button:
+                text: "Filter"
+                size_hint_x: None
+                width: dp(90)
+                on_release: app.refresh_inventory(search.text, tier.text)
+        ScrollView:
+            GridLayout:
+                id: grid
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                row_default_height: dp(60)
+                row_force_default: True
