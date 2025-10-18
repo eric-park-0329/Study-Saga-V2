@@ -135,12 +135,10 @@ The project is configured for Replit with:
   - 자동 진행도 추적 시스템
   - Admin 계정 2000 크리스탈 설정
 
-- **2025-10-18**: Animated background system
-  - Added gender-based animated GIF backgrounds to home screen
-  - Male background: Cozy study room with male character (3.87 MB)
-  - Female background: Cozy study room with female character (4.01 MB)
-  - Backgrounds auto-switch when gender changes in Settings
-  - Animated rain through window and fireplace flames
+- **2025-10-18**: 배경 화면 재배치
+  - 홈 화면: background_home.gif (4.0 MB) - 고정 배경, 모든 사용자 동일
+  - Study 화면: background_male.gif / background_female.gif - 성별별 배경
+  - Settings에서 성별 변경 시 Study 화면 배경 자동 변경
 
 - **2025-10-18**: Complete feature implementation
   - Implemented all core features (study, gacha, inventory, achievements, settings)

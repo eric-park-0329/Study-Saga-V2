@@ -171,13 +171,6 @@ class StudySagaApp(App):
         try:
             self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}! | Crystals: {self.crystals}"
             self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
-            
-            # Set background based on gender
-            gender = self.profile.get("gender", "female")
-            if gender == "male":
-                self.home.ids.background_gif.source = "attached_assets/background_male.gif"
-            else:
-                self.home.ids.background_gif.source = "attached_assets/background_female.gif"
         except Exception as e:
             print(f"Error updating home screen: {e}")
             pass
@@ -188,6 +181,13 @@ class StudySagaApp(App):
             return
         
         try:
+            # Set background based on gender
+            gender = self.profile.get("gender", "female")
+            if gender == "male":
+                self.study_screen.ids.background_gif.source = "attached_assets/background_male.gif"
+            else:
+                self.study_screen.ids.background_gif.source = "attached_assets/background_female.gif"
+            
             # Get weekly sessions
             sessions = DB.get_study_sessions(self.profile["id"], days=7)
             
