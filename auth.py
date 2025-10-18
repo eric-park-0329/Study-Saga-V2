@@ -1,11 +1,9 @@
-
 import db as DB
 
 def register(email: str, password: str, gender: str = "female"):
     DB.bootstrap()
     ok = DB.create_user(email, password)
     if ok:
-        # fetch user and set gender
         u = DB.auth_user(email, password)
         if u:
             DB.set_gender(u["id"], (gender or "female"))

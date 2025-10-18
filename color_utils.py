@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 
 @dataclass
@@ -21,10 +20,10 @@ LIGHT = Theme(
     text=(0, 0, 0, 1),
     accent=(0.2, 0.4, 0.9, 1),
     accent_text=(1, 1, 1, 1),
-    muted=(0, 0, 0, 0.6),
-    gold=(1.0,0.82,0.34,1),
-    silver=(0.8,0.85,0.95,1),
-    bronze=(0.92,0.72,0.48,1),
+    muted=(0, 0, 0, 0.65),
+    gold=(1.0, 0.88, 0.35, 1),
+    silver=(0.82, 0.86, 0.95, 1),
+    bronze=(0.90, 0.70, 0.45, 1),
 )
 
 DARK = Theme(
@@ -35,7 +34,7 @@ DARK = Theme(
     accent=(0.35, 0.65, 1.0, 1),
     accent_text=(0, 0, 0, 1),
     muted=(1, 1, 1, 0.7),
-    gold=(1.0,0.9,0.4,1),
-    silver=(0.75,0.8,0.9,1),
-    bronze=(0.85,0.6,0.4,1),
+    gold=(1.0, 0.9, 0.4, 1),
+    silver=(0.75, 0.8, 0.9, 1),
+    bronze=(0.85, 0.6, 0.4, 1),
 )
