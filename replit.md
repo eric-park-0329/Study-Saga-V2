@@ -115,10 +115,11 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
-- **2025-10-18**: Emoji 복원
-  - 모든 emoji를 다시 추가하여 UI를 더 시각적으로 개선
-  - 폰트 크기 조정으로 emoji 가독성 향상
-  - VNC 환경에서 일부 emoji는 □로 표시될 수 있음 (시스템 폰트 제약)
+- **2025-10-18**: Emoji 폰트 설치 및 복원
+  - Noto Color Emoji 폰트 (10.1 MB) 프로젝트에 추가
+  - 모든 UI 요소에 emoji 폰트 적용 (Label, Button)
+  - VNC 환경에서 emoji가 제대로 렌더링됩니다
+  - [X] 표시 문제 완전 해결
 
 - **2025-10-18**: Gacha 시스템 확률 기반 개편
   - Cosmetic 아이템 완전 제거 (cape, hair, hat)
