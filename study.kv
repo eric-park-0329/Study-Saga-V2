@@ -16,23 +16,34 @@
             pos_hint: {"center_x":0.5,"top":0.95}
             size_hint: 1, None
             height: dp(40)
+            font_size: "20sp"
+        Label:
+            id: active_items
+            text: ""
+            color: app.theme.gold
+            pos_hint: {"center_x":0.5,"top":0.88}
+            size_hint: 1, None
+            height: dp(30)
+            font_size: "14sp"
+            halign: "center"
+            valign: "middle"
         BoxLayout:
             size_hint: 0.9, None
             height: dp(44)
             spacing: dp(6)
-            pos_hint: {"center_x":0.5,"center_y":0.78}
+            pos_hint: {"center_x":0.5,"center_y":0.73}
             Button:
-                text: "Pomodoro 25/5 ×4"
+                text: "Pomodoro\n25 min"
                 on_release: app.pomodoro_start(25,5,4)
                 background_color: app.theme.card
                 color: app.theme.text
             Button:
-                text: "Quick 50"
+                text: "Quick\n50 min"
                 on_release: app.study_start(50)
                 background_color: app.theme.card
                 color: app.theme.text
             Button:
-                text: "Quick 90"
+                text: "Quick\n90 min"
                 on_release: app.study_start(90)
                 background_color: app.theme.card
                 color: app.theme.text
@@ -44,13 +55,14 @@
             value: 25
             size_hint: 0.9, None
             height: dp(40)
-            pos_hint: {"center_x":0.5,"center_y":0.66}
-        Label:
-            text: "Target: {} min".format(int(minutes.value))
-            color: app.theme.muted
             pos_hint: {"center_x":0.5,"center_y":0.60}
+        Label:
+            text: "Custom: {} min".format(int(minutes.value))
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"center_y":0.54}
             size_hint: 1, None
             height: dp(28)
+            font_size: "16sp"
         ProgressBar:
             id: pbar
             max: 1.0

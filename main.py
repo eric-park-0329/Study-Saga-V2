@@ -162,15 +162,20 @@ class StudySagaApp(App):
             self.crystals = user["crystals"]
             self.profile["nickname"] = user.get("nickname", "")
             self.profile["gender"] = user.get("gender", "female")
+            self.profile["exp"] = user.get("exp", 0)
+            self.profile["level"] = user.get("level", 1)
         
         # Update today's goal progress
         sessions = DB.get_study_sessions(self.profile["id"], days=1)
         today_minutes = sum(s["duration_minutes"] for s in sessions)
         goal_minutes = user.get("daily_goal_minutes", 60)
         
+        # Calculate EXP for next level
+        exp_needed = 100 * self.profile["level"]
+        
         try:
-            self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}! | Crystals: {self.crystals}"
-            self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
+            self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}! | Lv.{self.profile['level']} | Crystals: {self.crystals}"
+            self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min | EXP: {self.profile['exp']}/{exp_needed}"
         except Exception as e:
             print(f"Error updating home screen: {e}")
             pass
@@ -187,6 +192,15 @@ class StudySagaApp(App):
                 self.study_screen.ids.background_gif.source = "attached_assets/background_male.gif"
             else:
                 self.study_screen.ids.background_gif.source = "attached_assets/background_female.gif"
+            
+            # Show active items
+            DB.clean_expired_items(self.profile["id"])
+            active_items = DB.get_active_items(self.profile["id"])
+            if active_items:
+                items_text = ", ".join([f"{item['name']}" for item in active_items])
+                self.study_screen.ids.active_items.text = f"Active Boosts: {items_text}"
+            else:
+                self.study_screen.ids.active_items.text = ""
             
             # Get weekly sessions
             sessions = DB.get_study_sessions(self.profile["id"], days=7)
@@ -272,45 +286,81 @@ class StudySagaApp(App):
             self.study_timer.cancel()
             self.study_timer = None
         
-        # Calculate rewards (1 crystal per minute)
-        crystals_earned = self.study_duration
-        
-        # Save session
-        DB.add_study_session(self.profile["id"], self.study_duration, crystals_earned)
-        
-        # Update crystals
-        self.crystals = DB.update_crystals(self.profile["id"], crystals_earned)
-        
-        # Update achievements
         uid = self.profile["id"]
         
-        # Study session achievements
-        DB.update_achievement(uid, "First Study", 1)  # First study session
+        # Get active items and calculate bonuses
+        DB.clean_expired_items(uid)
+        active_items = DB.get_active_items(uid)
+        
+        crystal_bonus = 0
+        exp_bonus = 0
+        for item in active_items:
+            crystal_bonus += item.get("boost_crystal_pct", 0)
+            exp_bonus += item.get("boost_exp_pct", 0)
+        
+        # Calculate rewards (1 crystal per minute + bonuses)
+        base_crystals = self.study_duration
+        bonus_crystals = int(base_crystals * crystal_bonus / 100)
+        crystals_earned = base_crystals + bonus_crystals
+        
+        # Calculate EXP (1 EXP per minute + bonuses)
+        base_exp = self.study_duration
+        bonus_exp = int(base_exp * exp_bonus / 100)
+        exp_earned = base_exp + bonus_exp
+        
+        # Save session
+        DB.add_study_session(uid, self.study_duration, crystals_earned)
+        
+        # Update crystals and EXP
+        self.crystals = DB.update_crystals(uid, crystals_earned)
+        new_level = DB.update_exp(uid, exp_earned)
+        
+        # Update achievements
+        DB.update_achievement(uid, "First Study", 1)
+        DB.update_achievement(uid, "Quick Start", 1)
+        
         total_study_minutes = DB.get_total_study_minutes(uid)
-        DB.set_achievement_progress(uid, "Getting Started", total_study_minutes)  # 30 min
-        DB.set_achievement_progress(uid, "Study Novice", total_study_minutes)  # 2 hours
-        DB.set_achievement_progress(uid, "Study Warrior", total_study_minutes)  # 10 hours
-        DB.set_achievement_progress(uid, "Study Master", total_study_minutes)  # 50 hours
-        DB.set_achievement_progress(uid, "Study Legend", total_study_minutes)  # 100 hours
+        DB.set_achievement_progress(uid, "Getting Started", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Rookie", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Novice", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Apprentice", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Warrior", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Expert", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Master", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Grandmaster", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Legend", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study Mythic", total_study_minutes)
+        DB.set_achievement_progress(uid, "Study God", total_study_minutes)
         
-        # Weekly achievements
-        DB.update_achievement(uid, "Weekly Hero", 1)  # 5 sessions
-        DB.update_achievement(uid, "Weekly Champion", 1)  # 10 sessions
-        
-        # Marathon achievement (60 min single session)
+        # Marathon achievements
         if self.study_duration >= 60:
             DB.update_achievement(uid, "Marathon Runner", 1)
+        if self.study_duration >= 90:
+            DB.update_achievement(uid, "Ultra Marathon", 1)
         
         # Crystal achievements
         total_crystals = DB.get_total_crystals_earned(uid)
-        DB.set_achievement_progress(uid, "Pocket Change", total_crystals)  # 100
-        DB.set_achievement_progress(uid, "Crystal Collector", total_crystals)  # 1000
-        DB.set_achievement_progress(uid, "Crystal Hoarder", total_crystals)  # 5000
-        DB.set_achievement_progress(uid, "Crystal Tycoon", total_crystals)  # 10000
+        DB.set_achievement_progress(uid, "Pocket Change", total_crystals)
+        DB.set_achievement_progress(uid, "Crystal Collector", total_crystals)
+        DB.set_achievement_progress(uid, "Crystal Hoarder", total_crystals)
+        DB.set_achievement_progress(uid, "Crystal Tycoon", total_crystals)
+        DB.set_achievement_progress(uid, "Crystal Magnate", total_crystals)
+        DB.set_achievement_progress(uid, "Crystal Emperor", total_crystals)
+        
+        # Level achievements
+        DB.set_achievement_progress(uid, "Level 5", new_level)
+        DB.set_achievement_progress(uid, "Level 10", new_level)
+        DB.set_achievement_progress(uid, "Level 25", new_level)
+        DB.set_achievement_progress(uid, "Level 50", new_level)
+        DB.set_achievement_progress(uid, "Level 100", new_level)
         
         # Update UI
+        bonus_text = ""
+        if crystal_bonus > 0 or exp_bonus > 0:
+            bonus_text = f" (Bonus: +{crystal_bonus}% crystals, +{exp_bonus}% EXP)"
+        
         try:
-            self.study_screen.ids.status.text = f"[OK] Completed! +{crystals_earned} crystals"
+            self.study_screen.ids.status.text = f"[OK] Completed! +{crystals_earned} crystals, +{exp_earned} EXP{bonus_text}"
             self.study_screen.ids.pbar.value = 1.0
         except:
             pass
@@ -318,7 +368,7 @@ class StudySagaApp(App):
         # Refresh weekly bars
         self.refresh_study()
         
-        print(f"Study session completed! Earned {crystals_earned} crystals")
+        print(f"Study session completed! Earned {crystals_earned} crystals, {exp_earned} EXP")
     
     def study_stop(self):
         """Stop current study session"""
@@ -365,15 +415,14 @@ class StudySagaApp(App):
         
         # Update Gacha achievements
         uid = self.profile["id"]
-        DB.update_achievement(uid, "First Roll", 1)  # First roll
-        DB.update_achievement(uid, "Gacha Beginner", 1)  # 10 rolls
-        DB.update_achievement(uid, "Gacha Master", 1)  # 50 rolls
-        DB.update_achievement(uid, "Gacha Addict", 1)  # 100 rolls
+        DB.update_achievement(uid, "First Roll", 1)
+        DB.update_achievement(uid, "Gacha Beginner", 1)
+        DB.update_achievement(uid, "Gacha Enthusiast", 1)
+        DB.update_achievement(uid, "Gacha Master", 1)
+        DB.update_achievement(uid, "Gacha Addict", 1)
+        DB.update_achievement(uid, "Gacha Legend", 1)
         
         # Probability-based rarity selection
-        # Bronze gacha: bronze 90%, silver 9%, gold 1%
-        # Silver gacha: bronze 70%, silver 25%, gold 5%
-        # Gold gacha: bronze 50%, silver 40%, gold 10%
         probabilities = {
             "bronze": {"bronze": 90, "silver": 9, "gold": 1},
             "silver": {"bronze": 70, "silver": 25, "gold": 5},
@@ -397,7 +446,7 @@ class StudySagaApp(App):
         # Get items of selected rarity
         items = DB.get_items(selected_rarity)
         if not items:
-            items = DB.get_items()  # Fallback to all items
+            items = DB.get_items()
         
         if items:
             # Random item from selected rarity
@@ -406,27 +455,51 @@ class StudySagaApp(App):
             # Add to inventory
             DB.add_to_inventory(uid, item["id"])
             
+            # Update First Item achievement
+            DB.update_achievement(uid, "First Item", 1)
+            
             # Update collection achievements
             inventory = DB.get_inventory(uid)
             total_items = len(inventory)
             unique_items = len(set(i['item_id'] for i in inventory))
             
-            DB.set_achievement_progress(uid, "Collector", unique_items)  # 5 unique items
-            DB.set_achievement_progress(uid, "Hoarder", total_items)  # 15 total items
+            DB.set_achievement_progress(uid, "Collector", unique_items)
+            DB.set_achievement_progress(uid, "Hoarder", total_items)
+            DB.set_achievement_progress(uid, "Item Master", total_items)
+            DB.set_achievement_progress(uid, "Treasure Hunter", unique_items)
             
             # Lucky Strike achievement (gold rarity)
             if item["rarity"] == "gold":
                 DB.update_achievement(uid, "Lucky Strike", 1)
             
-            # Show result
-            rarity_prefix = {"bronze": "[BRONZE]", "silver": "[SILVER]", "gold": "[GOLD]"}
-            prefix = rarity_prefix.get(item["rarity"], "[ITEM]")
+            # Show chest image first
+            chest_images = {
+                "bronze": "attached_assets/chest_green.png",
+                "silver": "attached_assets/chest_blue.png",
+                "gold": "attached_assets/chest_gold.png"
+            }
+            chest_img = chest_images.get(item["rarity"], "attached_assets/chest_green.png")
             
+            # Show chest, then result after delay
             try:
-                self.gacha_screen.ids.result.text = f"{prefix} {item['name']}\n{item['description']}"
-                self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
-            except:
-                pass
+                from kivy.uix.image import Image
+                card_stage = self.gacha_screen.ids.card_stage
+                card_stage.clear_widgets()
+                
+                # Show chest
+                chest = Image(source=chest_img, fit_mode="contain")
+                card_stage.add_widget(chest)
+                
+                # Show result after 1 second
+                def show_result(dt):
+                    rarity_prefix = {"bronze": "[BRONZE]", "silver": "[SILVER]", "gold": "[GOLD]"}
+                    prefix = rarity_prefix.get(item["rarity"], "[ITEM]")
+                    self.gacha_screen.ids.result.text = f"{prefix} {item['name']}\n{item['description']}"
+                    self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
+                
+                Clock.schedule_once(show_result, 1.0)
+            except Exception as e:
+                print(f"Error showing chest: {e}")
             
             print(f"Gacha roll ({tier}): Got {item['name']}")
         else:
@@ -439,11 +512,14 @@ class StudySagaApp(App):
     def refresh_inventory(self, search="", tier="all"):
         """Refresh inventory list"""
         try:
+            from kivy.uix.button import Button
             grid = self.inventory_screen.ids.grid
             grid.clear_widgets()
             
-            # Get inventory
+            # Get inventory and active items
             items = DB.get_inventory(self.profile["id"])
+            active_items = DB.get_active_items(self.profile["id"])
+            active_item_ids = [ai["item_id"] for ai in active_items]
             
             # Filter
             if search:
@@ -468,16 +544,48 @@ class StudySagaApp(App):
                     }
                     color = rarity_colors.get(item["rarity"], self.theme.text)
                     
+                    # Check if item is active
+                    is_active = item["item_id"] in active_item_ids
+                    status = " [ACTIVE]" if is_active else ""
+                    
                     # Item info
-                    info = f"{item['name']}\n+{item['boost_exp_pct']}% EXP, +{item['boost_crystal_pct']}% Crystals"
-                    label = Label(text=info, color=color, halign="left", valign="middle")
+                    info = f"{item['name']}{status}\n+{item['boost_exp_pct']}% EXP, +{item['boost_crystal_pct']}% Crystals"
+                    label = Label(text=info, color=color, halign="left", valign="middle", size_hint_x=0.7)
                     label.text_size = (label.width, None)
                     label.bind(size=lambda lb, *_: setattr(lb, 'text_size', (lb.width, None)))
                     
+                    # Use button
+                    durations = {"bronze": "10min", "silver": "30min", "gold": "60min"}
+                    duration_text = durations.get(item["rarity"], "10min")
+                    
+                    use_btn = Button(
+                        text=f"Use ({duration_text})" if not is_active else "Active",
+                        size_hint_x=0.3,
+                        disabled=is_active,
+                        background_color=self.theme.accent if not is_active else self.theme.card,
+                        color=self.theme.accent_text
+                    )
+                    use_btn.bind(on_release=lambda btn, inv_id=item["id"]: self.use_item(inv_id))
+                    
                     row.add_widget(label)
+                    row.add_widget(use_btn)
                     grid.add_widget(row)
         except Exception as e:
             print(f"Error refreshing inventory: {e}")
+    
+    def use_item(self, inventory_id):
+        """Use/activate an item"""
+        uid = self.profile["id"]
+        success, msg = DB.activate_item(uid, inventory_id)
+        
+        print(f"Use item result: {msg}")
+        
+        # Update Power User achievement
+        if success:
+            DB.update_achievement(uid, "Power User", 1)
+        
+        # Refresh inventory to show updated status
+        self.refresh_inventory()
 
     # Settings functions
     def load_settings(self):

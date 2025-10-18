@@ -28,7 +28,9 @@ def _migrate():
                ("gender","TEXT DEFAULT 'female'"),
                ("crystals","INTEGER DEFAULT 100"),
                ("dark_mode","INTEGER DEFAULT 0"),
-               ("daily_goal_minutes","INTEGER DEFAULT 60")]
+               ("daily_goal_minutes","INTEGER DEFAULT 60"),
+               ("exp","INTEGER DEFAULT 0"),
+               ("level","INTEGER DEFAULT 1")]
     x.execute("PRAGMA table_info(users)")
     ucols=[r["name"] for r in x.fetchall()]
     for name, decl in need_cols:
@@ -60,7 +62,9 @@ def bootstrap():
         gender TEXT DEFAULT 'female',
         crystals INTEGER DEFAULT 100,
         dark_mode INTEGER DEFAULT 0,
-        daily_goal_minutes INTEGER DEFAULT 60
+        daily_goal_minutes INTEGER DEFAULT 60,
+        exp INTEGER DEFAULT 0,
+        level INTEGER DEFAULT 1
     );
     CREATE TABLE IF NOT EXISTS sessions(
         token TEXT PRIMARY KEY,
@@ -102,6 +106,13 @@ def bootstrap():
         goal INTEGER DEFAULT 100,
         completed INTEGER DEFAULT 0,
         completed_at INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS active_items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        item_id INTEGER,
+        activated_at INTEGER,
+        expires_at INTEGER
     );
     ''')
     c.commit(); c.close()
@@ -234,40 +245,59 @@ def init_achievements(uid):
     x.execute('SELECT COUNT(*) as cnt FROM achievements WHERE user_id=?', (uid,))
     if x.fetchone()['cnt'] == 0:
         achs = [
-            # Beginner achievements
+            # Beginner achievements (5)
             (uid, 'First Study', 'Complete your first study session', 0, 1),
             (uid, 'Getting Started', 'Study for 30 minutes total', 0, 30),
             (uid, 'First Roll', 'Perform your first gacha roll', 0, 1),
+            (uid, 'First Item', 'Acquire your first item', 0, 1),
+            (uid, 'Quick Start', 'Complete 3 study sessions', 0, 3),
             
-            # Study achievements
+            # Study Time achievements (10)
+            (uid, 'Study Rookie', 'Study for 1 hour total', 0, 60),
             (uid, 'Study Novice', 'Study for 2 hours total', 0, 120),
+            (uid, 'Study Apprentice', 'Study for 5 hours total', 0, 300),
             (uid, 'Study Warrior', 'Study for 10 hours total', 0, 600),
+            (uid, 'Study Expert', 'Study for 20 hours total', 0, 1200),
             (uid, 'Study Master', 'Study for 50 hours total', 0, 3000),
+            (uid, 'Study Grandmaster', 'Study for 75 hours total', 0, 4500),
             (uid, 'Study Legend', 'Study for 100 hours total', 0, 6000),
+            (uid, 'Study Mythic', 'Study for 150 hours total', 0, 9000),
+            (uid, 'Study God', 'Study for 200 hours total', 0, 12000),
             
-            # Crystal achievements
+            # Crystal achievements (6)
             (uid, 'Pocket Change', 'Earn 100 crystals', 0, 100),
             (uid, 'Crystal Collector', 'Earn 1000 crystals', 0, 1000),
             (uid, 'Crystal Hoarder', 'Earn 5000 crystals', 0, 5000),
             (uid, 'Crystal Tycoon', 'Earn 10000 crystals', 0, 10000),
+            (uid, 'Crystal Magnate', 'Earn 25000 crystals', 0, 25000),
+            (uid, 'Crystal Emperor', 'Earn 50000 crystals', 0, 50000),
             
-            # Gacha achievements
+            # Gacha achievements (5)
             (uid, 'Gacha Beginner', 'Perform 10 gacha rolls', 0, 10),
+            (uid, 'Gacha Enthusiast', 'Perform 25 gacha rolls', 0, 25),
             (uid, 'Gacha Master', 'Perform 50 gacha rolls', 0, 50),
             (uid, 'Gacha Addict', 'Perform 100 gacha rolls', 0, 100),
+            (uid, 'Gacha Legend', 'Perform 250 gacha rolls', 0, 250),
             
-            # Weekly achievements
-            (uid, 'Weekly Hero', 'Complete 5 study sessions in a week', 0, 5),
-            (uid, 'Weekly Champion', 'Complete 10 study sessions in a week', 0, 10),
+            # Level achievements (5)
+            (uid, 'Level 5', 'Reach level 5', 0, 5),
+            (uid, 'Level 10', 'Reach level 10', 0, 10),
+            (uid, 'Level 25', 'Reach level 25', 0, 25),
+            (uid, 'Level 50', 'Reach level 50', 0, 50),
+            (uid, 'Level 100', 'Reach level 100', 0, 100),
             
-            # Collection achievements
+            # Collection achievements (4)
             (uid, 'Collector', 'Own 5 different items', 0, 5),
             (uid, 'Hoarder', 'Own 15 items total', 0, 15),
-            (uid, 'Fashion Icon', 'Collect all 3 cosmetic items', 0, 3),
+            (uid, 'Item Master', 'Own 25 items total', 0, 25),
+            (uid, 'Treasure Hunter', 'Own all 6 unique items', 0, 6),
             
-            # Special achievements
+            # Special achievements (5)
             (uid, 'Lucky Strike', 'Get a gold rarity item from gacha', 0, 1),
             (uid, 'Marathon Runner', 'Complete a 60 minute study session', 0, 1),
+            (uid, 'Ultra Marathon', 'Complete a 90 minute study session', 0, 1),
+            (uid, 'Power User', 'Activate an item 10 times', 0, 10),
+            (uid, 'Consistency King', 'Study for 7 consecutive days', 0, 7),
         ]
         x.executemany('''INSERT INTO achievements(user_id, name, description, progress, goal)
                          VALUES (?, ?, ?, ?, ?)''', achs)
@@ -340,5 +370,96 @@ def set_achievement_progress(uid, name, new_progress):
         x.execute('''UPDATE achievements SET progress=? 
                      WHERE user_id=? AND name=?''', (new_progress, uid, name))
     
+    c.commit()
+    c.close()
+
+def update_exp(uid, amount):
+    """Add EXP and handle level-ups"""
+    c=_c(); x=c.cursor()
+    
+    # Get current user stats
+    x.execute('SELECT exp, level FROM users WHERE id=?', (uid,))
+    user = x.fetchone()
+    if not user:
+        c.close()
+        return 1
+    
+    current_exp = user['exp']
+    current_level = user['level']
+    new_exp = current_exp + amount
+    
+    # Calculate level-ups (100 EXP per level)
+    exp_per_level = 100
+    new_level = current_level
+    
+    while new_exp >= exp_per_level * new_level:
+        new_exp -= exp_per_level * new_level
+        new_level += 1
+    
+    # Update database
+    x.execute('UPDATE users SET exp=?, level=? WHERE id=?', (new_exp, new_level, uid))
+    c.commit()
+    c.close()
+    
+    return new_level
+
+def get_active_items(uid):
+    """Get all active items for a user"""
+    c=_c(); x=c.cursor()
+    now = int(time.time())
+    
+    # Get active items that haven't expired
+    x.execute('''SELECT ai.*, it.name, it.boost_exp_pct, it.boost_crystal_pct, it.rarity
+                 FROM active_items ai
+                 JOIN items it ON ai.item_id = it.id
+                 WHERE ai.user_id=? AND ai.expires_at > ?''', (uid, now))
+    r = [dict(row) for row in x.fetchall()]
+    c.close()
+    return r
+
+def activate_item(uid, inventory_id):
+    """Activate an item from inventory"""
+    c=_c(); x=c.cursor()
+    
+    # Get the item from inventory
+    x.execute('''SELECT i.*, it.rarity
+                 FROM inventory i
+                 JOIN items it ON i.item_id = it.id
+                 WHERE i.id=? AND i.user_id=?''', (inventory_id, uid))
+    inv_item = x.fetchone()
+    
+    if not inv_item:
+        c.close()
+        return False, "Item not found"
+    
+    inv_item = dict(inv_item)
+    
+    # Check if item is already active
+    now = int(time.time())
+    x.execute('''SELECT COUNT(*) as cnt FROM active_items 
+                 WHERE user_id=? AND item_id=? AND expires_at > ?''', 
+              (uid, inv_item['item_id'], now))
+    if x.fetchone()['cnt'] > 0:
+        c.close()
+        return False, "Item already active"
+    
+    # Determine duration based on rarity (Bronze: 10min, Silver: 30min, Gold: 60min)
+    durations = {'bronze': 10*60, 'silver': 30*60, 'gold': 60*60}
+    duration = durations.get(inv_item['rarity'], 10*60)
+    expires_at = now + duration
+    
+    # Activate item
+    x.execute('''INSERT INTO active_items(user_id, item_id, activated_at, expires_at)
+                 VALUES (?, ?, ?, ?)''', (uid, inv_item['item_id'], now, expires_at))
+    
+    c.commit()
+    c.close()
+    return True, "Item activated!"
+
+def clean_expired_items(uid):
+    """Remove expired items"""
+    c=_c(); x=c.cursor()
+    now = int(time.time())
+    x.execute('DELETE FROM active_items WHERE user_id=? AND expires_at <= ?', (uid, now))
     c.commit()
     c.close()
