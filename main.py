@@ -199,8 +199,14 @@ class StudySagaApp(App):
             if active_items:
                 items_text = ", ".join([f"{item['name']}" for item in active_items])
                 self.study_screen.ids.active_items.text = f"Active Boosts: {items_text}"
+                
+                # Calculate total effects
+                total_exp = sum(item.get('boost_exp_pct', 0) for item in active_items)
+                total_crystal = sum(item.get('boost_crystal_pct', 0) for item in active_items)
+                self.study_screen.ids.active_effects.text = f"Effect: EXP +{total_exp}%, Crystal +{total_crystal}%"
             else:
                 self.study_screen.ids.active_items.text = ""
+                self.study_screen.ids.active_effects.text = ""
             
             # Get weekly sessions
             sessions = DB.get_study_sessions(self.profile["id"], days=7)
@@ -247,6 +253,8 @@ class StudySagaApp(App):
         try:
             self.study_screen.ids.status.text = f"Studying for {minutes} min..."
             self.study_screen.ids.pbar.value = 0
+            # Update slider to match the preset
+            self.study_screen.ids.minutes.value = minutes
         except:
             pass
         
@@ -486,12 +494,23 @@ class StudySagaApp(App):
                 card_stage = self.gacha_screen.ids.card_stage
                 card_stage.clear_widgets()
                 
-                # Show chest
-                chest = Image(source=chest_img, fit_mode="contain")
+                # Clear previous result text
+                self.gacha_screen.ids.result.text = ""
+                self.gacha_screen.ids.pity.text = "Opening chest..."
+                
+                # Show chest image
+                chest = Image(
+                    source=chest_img,
+                    allow_stretch=True,
+                    keep_ratio=True,
+                    size_hint=(1, 1),
+                    pos_hint={"center_x": 0.5, "center_y": 0.5}
+                )
                 card_stage.add_widget(chest)
                 
                 # Show result after 1 second
                 def show_result(dt):
+                    card_stage.clear_widgets()
                     rarity_prefix = {"bronze": "[BRONZE]", "silver": "[SILVER]", "gold": "[GOLD]"}
                     prefix = rarity_prefix.get(item["rarity"], "[ITEM]")
                     self.gacha_screen.ids.result.text = f"{prefix} {item['name']}\n{item['description']}"
@@ -500,6 +519,8 @@ class StudySagaApp(App):
                 Clock.schedule_once(show_result, 1.0)
             except Exception as e:
                 print(f"Error showing chest: {e}")
+                import traceback
+                traceback.print_exc()
             
             print(f"Gacha roll ({tier}): Got {item['name']}")
         else:
@@ -652,10 +673,9 @@ class StudySagaApp(App):
                 for ach in achievements:
                     row = BoxLayout(orientation="vertical", size_hint_y=None, height=80, spacing=4)
                     
-                    # Title
-                    status = "[OK]" if ach["completed"] else "[ ]"
+                    # Title (no status symbol - color indicates completion)
                     title = Label(
-                        text=f"{status} {ach['name']}", 
+                        text=f"{ach['name']}", 
                         color=self.theme.text if ach["completed"] else self.theme.muted,
                         halign="left",
                         valign="top",

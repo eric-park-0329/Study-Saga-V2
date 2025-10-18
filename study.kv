@@ -23,15 +23,25 @@
             color: app.theme.gold
             pos_hint: {"center_x":0.5,"top":0.88}
             size_hint: 1, None
-            height: dp(30)
+            height: dp(20)
             font_size: "14sp"
+            halign: "center"
+            valign: "middle"
+        Label:
+            id: active_effects
+            text: ""
+            color: app.theme.silver
+            pos_hint: {"center_x":0.5,"top":0.85}
+            size_hint: 1, None
+            height: dp(20)
+            font_size: "12sp"
             halign: "center"
             valign: "middle"
         BoxLayout:
             size_hint: 0.9, None
             height: dp(44)
             spacing: dp(6)
-            pos_hint: {"center_x":0.5,"center_y":0.73}
+            pos_hint: {"center_x":0.5,"center_y":0.70}
             Button:
                 text: "Pomodoro\n25 min"
                 on_release: app.pomodoro_start(25,5,4)
@@ -55,11 +65,11 @@
             value: 25
             size_hint: 0.9, None
             height: dp(40)
-            pos_hint: {"center_x":0.5,"center_y":0.60}
+            pos_hint: {"center_x":0.5,"center_y":0.57}
         Label:
             text: "Custom: {} min".format(int(minutes.value))
             color: app.theme.text
-            pos_hint: {"center_x":0.5,"center_y":0.54}
+            pos_hint: {"center_x":0.5,"center_y":0.51}
             size_hint: 1, None
             height: dp(28)
             font_size: "16sp"

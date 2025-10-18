@@ -67,15 +67,20 @@
             height: dp(44)
             spacing: dp(8)
             Label:
-                text: "Daily Goal (min)"
+                text: "Daily Goal"
                 color: app.theme.text
-                size_hint_x: 0.4
+                size_hint_x: 0.3
+            Label:
+                text: "{} min".format(int(goal.value))
+                color: app.theme.text
+                size_hint_x: 0.2
             Slider:
                 id: goal
                 min: 15
                 max: 300
                 step: 5
                 value: 60
+                size_hint_x: 0.5
         BoxLayout:
             size_hint_y: None
             height: dp(44)
