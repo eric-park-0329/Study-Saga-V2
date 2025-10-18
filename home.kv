@@ -20,12 +20,15 @@
             font_size: "18sp"
             halign: "center"
             valign: "middle"
-        GridLayout:
-            cols: 3
+        
+        # Left side buttons
+        BoxLayout:
+            orientation: "vertical"
             spacing: dp(10)
-            size_hint: 0.92, None
-            height: self.minimum_height
-            pos_hint: {"center_x":0.5,"center_y":0.33}
+            size_hint: None, None
+            width: dp(140)
+            height: dp(220)
+            pos_hint: {"x":0.04,"center_y":0.45}
             Button:
                 text: "Study"
                 on_release: app.go("study")
@@ -50,6 +53,15 @@
                 size_hint_y: None
                 height: dp(70)
                 font_size: "16sp"
+        
+        # Right side buttons
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(10)
+            size_hint: None, None
+            width: dp(140)
+            height: dp(150)
+            pos_hint: {"right":0.96,"center_y":0.45}
             Button:
                 text: "Inventory"
                 on_release: app.go("inventory")

@@ -28,7 +28,3 @@ outputType = "vnc"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
-
-[[ports]]
-localPort = 45001
-externalPort = 80

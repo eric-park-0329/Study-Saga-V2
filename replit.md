@@ -115,6 +115,12 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
+- **2025-10-18**: 홈 화면 레이아웃 개선
+  - 버튼들을 양쪽 사이드로 배치 (왼쪽 3개, 오른쪽 2개)
+  - 중앙의 책상 배경이 잘 보이도록 레이아웃 조정
+  - 왼쪽: Study, Gacha, Achievements
+  - 오른쪽: Inventory, Settings
+
 - **2025-10-18**: UI 텍스트 최적화 및 Alignment 개선
   - Emoji 제거하고 일반 텍스트로 변경 (alignment 문제 해결)
   - 모든 텍스트가 깔끔하게 중앙 정렬
