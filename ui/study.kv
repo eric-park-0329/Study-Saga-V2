@@ -1,30 +1,122 @@
 #:kivy 2.3.0
-
 <StudyScreen>:
+    name: "study"
     FloatLayout:
-        size: root.size
-
+        # Animated background (gender-based)
+        Image:
+            id: background_gif
+            source: ""
+            fit_mode: "fill"
+            pos: self.parent.pos
+            size: self.parent.size
+            anim_delay: 0.1
         Label:
             text: "Study Session"
-            font_size: '26sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.88}
-
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"top":0.95}
+            size_hint: 1, None
+            height: dp(40)
+            font_size: "20sp"
         Label:
-            text: root.status
-            font_size: '18sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.8}
-
+            id: active_items
+            text: ""
+            color: app.theme.gold
+            pos_hint: {"center_x":0.5,"top":0.88}
+            size_hint: 1, None
+            height: dp(20)
+            font_size: "14sp"
+            halign: "center"
+            valign: "middle"
+        Label:
+            id: active_effects
+            text: ""
+            color: app.theme.silver
+            pos_hint: {"center_x":0.5,"top":0.85}
+            size_hint: 1, None
+            height: dp(20)
+            font_size: "12sp"
+            halign: "center"
+            valign: "middle"
         BoxLayout:
-            size_hint: 0.6, None
-            height: dp(48)
+            size_hint: 0.9, None
+            height: dp(44)
+            spacing: dp(6)
+            pos_hint: {"center_x":0.5,"center_y":0.70}
+            Button:
+                text: "Pomodoro\n25 min"
+                on_release: app.pomodoro_start(25,5,4)
+                background_color: app.theme.card
+                color: app.theme.text
+            Button:
+                text: "Quick\n50 min"
+                on_release: app.study_start(50)
+                background_color: app.theme.card
+                color: app.theme.text
+            Button:
+                text: "Quick\n90 min"
+                on_release: app.study_start(90)
+                background_color: app.theme.card
+                color: app.theme.text
+        Slider:
+            id: minutes
+            min: 5
+            max: 120
+            step: 5
+            value: 25
+            size_hint: 0.9, None
+            height: dp(40)
+            pos_hint: {"center_x":0.5,"center_y":0.57}
+        Label:
+            text: "Custom: {} min".format(int(minutes.value))
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"center_y":0.51}
+            size_hint: 1, None
+            height: dp(28)
+            font_size: "16sp"
+        ProgressBar:
+            id: pbar
+            max: 1.0
+            value: 0.0
+            size_hint: 0.92, None
+            height: dp(24)
+            pos_hint: {"center_x":0.5,"center_y":0.50}
+        Label:
+            id: status
+            text: ""
+            color: app.theme.muted
+            pos_hint: {"center_x":0.5,"center_y":0.43}
+            size_hint: 0.92, None
+            halign: "center"
+            valign: "middle"
+            text_size: self.size
+        BoxLayout:
+            id: weekbars
+            size_hint: 0.92, None
+            height: dp(20)
+            pos_hint: {"center_x":0.5,"center_y":0.30}
+            spacing: dp(5)
+        BoxLayout:
+            size_hint: 0.92, None
+            height: dp(44)
             spacing: dp(10)
-            pos_hint: {'center_x': 0.5, 'y': 0.12}
+            pos_hint: {"center_x":0.5,"center_y":0.18}
             Button:
+                id: startbtn
                 text: "Start"
-                on_release: app.study_start()
+                on_release: app.study_start(int(minutes.value))
+                background_color: app.theme.accent
+                color: app.theme.accent_text
             Button:
-                text: "Pause"
-                on_release: app.study_pause()
-            Button:
-                text: "Back"
-                on_release: app.go_home()
+                id: stopbtn
+                text: "Stop"
+                on_release: app.study_stop()
+                background_color: app.theme.card
+                color: app.theme.text
+        Button:
+            text: "← Back"
+            size_hint: 0.3, None
+            height: dp(36)
+            pos_hint: {"x":0.04,"y":0.02}
+            on_release: app.go("home")
+            background_color: app.theme.card
+            color: app.theme.text

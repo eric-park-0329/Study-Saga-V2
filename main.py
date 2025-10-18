@@ -7,8 +7,33 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.lang import Builder
+
+from kivy.resources import resource_add_path, resource_find
 from kivy.clock import Clock
 from kivy.uix.progressbar import ProgressBar
+
+# --- Asset path helpers ---
+ASSET_DIR = os.path.join(os.path.dirname(__file__), "attached_assets")
+
+def _find_asset(prefix: str, exts=(".gif", ".png", ".jpg", ".jpeg")) -> str:
+    """Return a path to the first file in attached_assets that starts with prefix (without extension),
+    preferring .gif then .png, etc. Falls back to resource_find('attached_assets/<prefix>.<ext>')."""
+    # Try direct resource_find first for standard names
+    for ext in exts:
+        p = resource_find(f"attached_assets/{prefix}{ext}")
+        if p:
+            return p
+    # Fuzzy match by prefix in ASSET_DIR
+    try:
+        for ext in exts:
+            for f in os.listdir(ASSET_DIR):
+                name = f.lower()
+                if name.startswith(prefix.lower()) and name.endswith(ext):
+                    return os.path.join(ASSET_DIR, f)
+    except Exception:
+        pass
+    # As a last fallback return the literal path (may still work if cwd matches)
+    return ""
 
 import db as DB
 import auth as AUTH
@@ -72,6 +97,7 @@ class StudySagaApp(App):
     study_elapsed = 0
     
     def build(self):
+        resource_add_path(ASSET_DIR)
         DB.bootstrap()
         DB.init_items()
         
@@ -97,6 +123,25 @@ class StudySagaApp(App):
         self.sm.current = "auth"
         return self.sm
 
+    def set_gender(self, gender: str):
+        """Update the current user's gender and refresh backgrounds."""
+        try:
+            if not self.user:
+                return
+            DB.set_gender(self.profile["id"], gender)
+            self.profile["gender"] = gender
+            # Update study background immediately
+            if hasattr(self, "study_screen") and self.study_screen and self.study_screen.ids.get("background_gif"):
+                bg = _find_asset("background_male" if gender=="male" else "background_female")
+                self.study_screen.ids.background_gif.source = bg
+            # Update home background as well (if present)
+            if hasattr(self, "home") and self.home and self.home.ids.get("background_gif"):
+                home_bg = _find_asset("background_home") or _find_asset("background_empty")
+                self.home.ids.background_gif.source = home_bg
+            self.set_msg(f"Gender set to {gender}.")
+        except Exception as e:
+            print("set_gender error:", e)
+    
     def go(self, name): 
         if name in [s.name for s in self.sm.screens]:
             # Load data when entering certain screens
@@ -135,7 +180,15 @@ class StudySagaApp(App):
         if not ok: 
             return
         
-        # Save profile and switch to Home
+        
+        # Ensure admin account always has 1000 crystals
+        try:
+            if (email or '').strip() == 'admin' and user:
+                DB.set_crystals(user['id'], 1000)
+                user['crystals'] = 1000
+        except Exception as _e:
+            print('admin crystals set error', _e)
+# Save profile and switch to Home
         self.user = user
         self.token = user["token"]
         self.crystals = user.get("crystals", 100)
@@ -174,6 +227,12 @@ class StudySagaApp(App):
         exp_needed = 100 * self.profile["level"]
         
         try:
+            # Ensure home background is set (gif/png tolerant)
+            try:
+                self.home.ids.background_gif.source = _find_asset('background_home') or _find_asset('background_empty')
+            except Exception:
+                pass
+
             self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}! | Lv.{self.profile['level']} | Crystals: {self.crystals}"
             self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min | EXP: {self.profile['exp']}/{exp_needed}"
         except Exception as e:
@@ -189,9 +248,9 @@ class StudySagaApp(App):
             # Set background based on gender
             gender = self.profile.get("gender", "female")
             if gender == "male":
-                self.study_screen.ids.background_gif.source = "attached_assets/background_male.gif"
+                self.study_screen.ids.background_gif.source = _find_asset("background_male")
             else:
-                self.study_screen.ids.background_gif.source = "attached_assets/background_female.gif"
+                self.study_screen.ids.background_gif.source = _find_asset("background_female")
             
             # Show active items
             DB.clean_expired_items(self.profile["id"])
@@ -482,9 +541,9 @@ class StudySagaApp(App):
             
             # Show chest image first
             chest_images = {
-                "bronze": "attached_assets/chest_green.png",
-                "silver": "attached_assets/chest_blue.png",
-                "gold": "attached_assets/chest_gold.png"
+                "bronze": _find_asset("chest_green"),
+                "silver": (_find_asset("chest_purple") or _find_asset("chest_blue")),
+                "gold": _find_asset("chest_gold")
             }
             chest_img = chest_images.get(item["rarity"], "attached_assets/chest_green.png")
             
@@ -516,7 +575,7 @@ class StudySagaApp(App):
                     self.gacha_screen.ids.result.text = f"{prefix} {item['name']}\n{item['description']}"
                     self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
                 
-                Clock.schedule_once(show_result, 1.0)
+                Clock.schedule_once(show_result, 3.0)
             except Exception as e:
                 print(f"Error showing chest: {e}")
                 import traceback
@@ -530,83 +589,162 @@ class StudySagaApp(App):
                 pass
 
     # Inventory functions
+    
+
+    
     def refresh_inventory(self, search="", tier="all"):
-        """Refresh inventory list"""
-        try:
-            from kivy.uix.button import Button
-            grid = self.inventory_screen.ids.grid
-            grid.clear_widgets()
-            
-            # Get inventory and active items
-            items = DB.get_inventory(self.profile["id"])
-            active_items = DB.get_active_items(self.profile["id"])
-            active_item_ids = [ai["item_id"] for ai in active_items]
-            
-            # Filter
-            if search:
-                items = [i for i in items if search.lower() in i["name"].lower()]
-            if tier != "all":
-                items = [i for i in items if i["rarity"] == tier]
-            
-            # Display
-            if not items:
-                label = Label(text="No items found", color=self.theme.muted)
-                grid.add_widget(label)
-            else:
-                for item in items:
-                    # Create item row
-                    row = BoxLayout(size_hint_y=None, height=60, spacing=10)
-                    
-                    # Rarity indicator
+            """Refresh inventory list (group duplicates) with a 'Use' button and detail popup on title click."""
+            try:
+                from kivy.uix.button import Button
+                from kivy.uix.gridlayout import GridLayout
+                from kivy.metrics import dp
+                
+                grid = self.inventory_screen.ids.grid
+                grid.clear_widgets()
+                
+                raw_items = DB.get_inventory(self.profile["id"])
+                active_items = DB.get_active_items(self.profile["id"])
+                active_item_ids = [ai["item_id"] for ai in active_items]
+                
+                # Filter
+                filtered = []
+                for it in raw_items:
+                    if search and search.lower() not in it["name"].lower():
+                        continue
+                    if tier != "all" and it["rarity"] != tier:
+                        continue
+                    filtered.append(it)
+                
+                # Group
+                grouped = {}
+                for it in filtered:
+                    key = it["item_id"]
+                    g = grouped.get(key)
+                    if not g:
+                        grouped[key] = {
+                            "any_inventory_id": it["id"],
+                            "item_id": it["item_id"],
+                            "name": it["name"],
+                            "rarity": it["rarity"],
+                            "boost_exp_pct": it["boost_exp_pct"],
+                            "boost_crystal_pct": it["boost_crystal_pct"],
+                            "description": it["description"],
+                            "count": 0
+                        }
+                    grouped[key]["count"] += 1
+                    if it["id"] > grouped[key]["any_inventory_id"]:
+                        grouped[key]["any_inventory_id"] = it["id"]
+                
+                # Sort
+                order = {"gold": 0, "silver": 1, "bronze": 2}
+                groups = list(grouped.values())
+                groups.sort(key=lambda g: (order.get(g["rarity"], 9), g["name"].lower()))
+                
+                for g in groups:
                     rarity_colors = {
                         "bronze": self.theme.bronze,
                         "silver": self.theme.silver,
                         "gold": self.theme.gold
                     }
-                    color = rarity_colors.get(item["rarity"], self.theme.text)
+                    base_color = rarity_colors.get(g["rarity"], self.theme.text)
+                    is_active = g["item_id"] in active_item_ids
                     
-                    # Check if item is active
-                    is_active = item["item_id"] in active_item_ids
-                    status = " [ACTIVE]" if is_active else ""
+                    title = f"{g['name']} ({g['count']})" + ("  [ACTIVE]" if is_active else "")
+                    sub = f"+{g['boost_exp_pct']}% EXP · +{g['boost_crystal_pct']}% Crystals"
                     
-                    # Item info
-                    info = f"{item['name']}{status}\n+{item['boost_exp_pct']}% EXP, +{item['boost_crystal_pct']}% Crystals"
-                    label = Label(text=info, color=color, halign="left", valign="middle", size_hint_x=0.7)
-                    label.text_size = (label.width, None)
-                    label.bind(size=lambda lb, *_: setattr(lb, 'text_size', (lb.width, None)))
-                    
-                    # Use button
-                    durations = {"bronze": "10min", "silver": "30min", "gold": "60min"}
-                    duration_text = durations.get(item["rarity"], "10min")
-                    
-                    use_btn = Button(
-                        text=f"Use ({duration_text})" if not is_active else "Active",
-                        size_hint_x=0.3,
-                        disabled=is_active,
-                        background_color=self.theme.accent if not is_active else self.theme.card,
-                        color=self.theme.accent_text
+                    # Title (click to open popup)
+                    left = Button(
+                        text=title + "\n" + sub,
+                        size_hint=(0.78, None),
+                        height=dp(58),
+                        color=base_color,
+                        background_color=self.theme.card
                     )
-                    use_btn.bind(on_release=lambda btn, inv_id=item["id"]: self.use_item(inv_id))
+                    item_copy = dict(g)  # capture for lambda
+                    left.bind(on_release=lambda _b, item=item_copy: self.show_item_details(item))
                     
-                    row.add_widget(label)
+                    # 'Use' button
+                    inv_id = g["any_inventory_id"]
+                    use_btn = Button(
+                        text="Use",
+                        size_hint=(0.20, None),
+                        height=dp(58),
+                        background_color=self.theme.card,
+                        color=self.theme.text
+                    )
+                    if is_active:
+                        use_btn.disabled = True
+                        # grey-out both sides if active
+                        left.color = (0.6,0.6,0.6,1)
+                        left.opacity = 0.6
+                        use_btn.color = (0.6,0.6,0.6,1)
+                    else:
+                        use_btn.bind(on_release=lambda _b, inv_id=inv_id: self.use_item(inv_id))
+                    
+                    row = GridLayout(cols=2, size_hint=(1, None), height=dp(60), spacing=dp(10))
+                    row.add_widget(left)
                     row.add_widget(use_btn)
                     grid.add_widget(row)
-        except Exception as e:
-            print(f"Error refreshing inventory: {e}")
-    
+            
+            except Exception as e:
+                print(f"Error refreshing inventory: {e}")
+
     def use_item(self, inventory_id):
-        """Use/activate an item"""
-        uid = self.profile["id"]
-        success, msg = DB.activate_item(uid, inventory_id)
-        
-        print(f"Use item result: {msg}")
-        
-        # Update Power User achievement
-        if success:
-            DB.update_achievement(uid, "Power User", 1)
-        
-        # Refresh inventory to show updated status
-        self.refresh_inventory()
+            """Consume one item from the grouped inventory and activate it."""
+            try:
+                uid = self.profile["id"]
+                success, msg = DB.activate_item(uid, inventory_id)
+                print(f"Use item result: {msg}")
+                # Achievement: Power User
+                if success:
+                    DB.update_achievement(uid, "Power User", 1)
+                # Refresh list
+                self.refresh_inventory()
+                # Toast/message if available
+                try:
+                    self.set_msg(msg)
+                except Exception:
+                    pass
+            except Exception as e:
+                print("use_item error:", e)
+
+    def show_item_details(self, item):
+            """Show a popup with item details: name, rarity, boosts, description."""
+            try:
+                from kivy.uix.popup import Popup
+                from kivy.uix.boxlayout import BoxLayout
+                from kivy.uix.label import Label
+                from kivy.uix.button import Button
+                from kivy.metrics import dp
+                
+                name = item.get("name", "Item")
+                rarity = item.get("rarity", "")
+                bx = item.get("boost_exp_pct", 0)
+                bc = item.get("boost_crystal_pct", 0)
+                desc = item.get("description") or ""
+                
+                box = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(10))
+                title = Label(text=f"[b]{name}[/b]  ({rarity})", markup=True, size_hint=(1,None), height=dp(30), color=self.theme.text)
+                info  = Label(text=f"+{bx}% EXP  ·  +{bc}% Crystals", size_hint=(1,None), height=dp(24), color=self.theme.text)
+                body  = Label(text=desc, size_hint=(1,1), color=self.theme.text)
+                close = Button(text="Close", size_hint=(1,None), height=dp(40), background_color=self.theme.card, color=self.theme.text)
+                box.add_widget(title); box.add_widget(info); box.add_widget(body); box.add_widget(close)
+                pop = Popup(title="", content=box, size_hint=(0.7, 0.5), auto_dismiss=True)
+                close.bind(on_release=lambda *_: pop.dismiss())
+                pop.open()
+            except Exception as e:
+                print("show_item_details error:", e)
+
+    def close_settings(self):
+            """Optionally save settings and return to Home."""
+            try:
+                self.save_settings()
+            except Exception as e:
+                print("close_settings save error:", e)
+            try:
+                self.go("home")
+            except Exception:
+                self.sm.current = "home"
 
     # Settings functions
     def load_settings(self):

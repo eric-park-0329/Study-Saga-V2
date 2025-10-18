@@ -51,6 +51,25 @@ def _migrate():
     
     c.close()
 
+
+def ensure_admin_user():
+    """Create 'admin' user with password 'admin' if missing, and set crystals to 1000."""
+    c=_c(); x=c.cursor()
+    # find exact email 'admin'
+    x.execute('SELECT id FROM users WHERE email=?', ('admin',))
+    r = x.fetchone()
+    if not r:
+        # create admin
+        x.execute('INSERT INTO users(email,password_hash,gender,crystals) VALUES (?,?,?,?)',
+                  ('admin', _hash('admin'), 'male', 1000))
+        c.commit()
+    else:
+        # update crystals to 1000
+        x.execute('UPDATE users SET crystals=? WHERE id=?', (1000, r['id']))
+        c.commit()
+    c.close()
+
+
 def bootstrap():
     c=_c(); x=c.cursor()
     x.executescript('''
@@ -158,6 +177,11 @@ def get_user(uid):
     r=x.fetchone(); c.close()
     return dict(r) if r else None
 
+
+def set_crystals(uid, value:int):
+    c=_c(); x=c.cursor()
+    x.execute('UPDATE users SET crystals=? WHERE id=?',(value, uid))
+    c.commit(); c.close()
 def update_crystals(uid, amount):
     c=_c(); x=c.cursor()
     x.execute('UPDATE users SET crystals=crystals+? WHERE id=?', (amount, uid))
@@ -183,26 +207,38 @@ def get_study_sessions(uid, days=7):
     c.close()
     return r
 
-def init_items():
-    """Initialize default items in database"""
+
+def ensure_item_by_name(name, type_, rarity, bx, bc, desc, img):
     c=_c(); x=c.cursor()
-    x.execute('SELECT COUNT(*) as cnt FROM items')
-    if x.fetchone()['cnt'] == 0:
-        items = [
-            # Bronze items
-            ('Magic Book', 'boost', 'bronze', 5, 10, 'A mystical tome that boosts learning', None),
-            ('Study Potion', 'consumable', 'bronze', 3, 5, 'Temporary focus boost', None),
-            # Silver items
-            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power', None),
-            ('Lucky Charm', 'boost', 'silver', 0, 20, 'Increases crystal drops', None),
-            # Gold items
-            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom', None),
-            ('Epic Scroll', 'boost', 'gold', 25, 20, 'Legendary knowledge scroll', None),
-        ]
-        x.executemany('''INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description, image_path)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)''', items)
+    x.execute('SELECT id FROM items WHERE name=?', (name,))
+    row = x.fetchone()
+    if not row:
+        x.execute('INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description, image_path) VALUES (?,?,?,?,?,?,?)',
+                  (name, type_, rarity, bx, bc, desc, img))
         c.commit()
     c.close()
+
+
+def init_items():
+    """Ensure base items exist (5 per rarity)."""
+    try:
+        ensure_item_by_name('Focus Tea', 'consumable', 'bronze', 6, 5, 'A warm brew that helps you lock in for a bit.', '')
+        ensure_item_by_name('Pomodoro Timer', 'consumable', 'bronze', 8, 3, 'Tick-tock boost to short sprints.', '')
+        ensure_item_by_name('Sticky Notes Storm', 'consumable', 'bronze', 5, 7, 'Notes everywhere—your brain loves it.', '')
+        ensure_item_by_name('Desk Plant Buddy', 'consumable', 'bronze', 7, 6, 'Tiny chlorophyll, tiny productivity bump.', '')
+        ensure_item_by_name('Blue Light Glasses', 'consumable', 'bronze', 9, 4, 'Less eye strain, more brain gain.', '')
+        ensure_item_by_name('Midnight Oil', 'consumable', 'silver', 14, 10, 'Burn it wisely: longer focus streaks.', '')
+        ensure_item_by_name('Flashcard Frenzy', 'consumable', 'silver', 16, 12, 'Your recall just found second gear.', '')
+        ensure_item_by_name('Study Lo-Fi Mix', 'consumable', 'silver', 15, 14, 'Beats to level up your grind.', '')
+        ensure_item_by_name('Mind Palace Kit', 'consumable', 'silver', 18, 11, 'Organize thoughts like royalty.', '')
+        ensure_item_by_name('Habit Tracker Pro', 'consumable', 'silver', 13, 15, 'Consistency pays dividends.', '')
+        ensure_item_by_name('Quantum Coffee', 'consumable', 'gold', 28, 22, 'Superposition of alert + calm.', '')
+        ensure_item_by_name('Zen Master Candle', 'consumable', 'gold', 25, 24, 'Tranquility with turbocharged focus.', '')
+        ensure_item_by_name('Lightning Keyboard', 'consumable', 'gold', 30, 20, 'Your WPM just crits.', '')
+        ensure_item_by_name('Flow State Serum', 'consumable', 'gold', 27, 25, 'Slip into the zone on command.', '')
+        ensure_item_by_name('Champion’s Checklist', 'consumable', 'gold', 26, 23, 'Plan it. Crush it. Repeat.', '')
+    except Exception as e:
+        print('init_items error', e)
 
 def get_items(rarity=None):
     c=_c(); x=c.cursor()

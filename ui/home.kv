@@ -1,48 +1,89 @@
 #:kivy 2.3.0
-
 <HomeScreen>:
+    name: "home"
     FloatLayout:
-        size: root.size
-
-        Label:
-            id: welcome
-            text: "Welcome!"
-            font_size: '24sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.94}
-
-        Label:
-            id: crystals
-            text: "Crystals: -"
-            font_size: '16sp'
-            pos_hint: {'center_x': 0.5, 'top': 0.88}
-
+        # Animated background (fixed home background)
         Image:
-            id: avatar
-            size_hint: None, None
-            size: dp(192), dp(192)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.62}
-            allow_stretch: True
-            keep_ratio: True
+            id: background_gif
+            source: "attached_assets/background_home.gif"
+            fit_mode: "fill"
+            pos: self.parent.pos
+            size: self.parent.size
+            anim_delay: 0.1
+        Label:
+            id: hello
+            text: "Hi, {}!  | Crystals: {}".format(app.profile.get("nickname",""), app.crystals)
+            color: app.theme.text
+            pos_hint: {"center_x":0.5,"top":0.98}
+            size_hint: 1, None
+            height: dp(50)
+            font_size: "18sp"
+            halign: "center"
+            valign: "middle"
 
+        # Left side buttons
         BoxLayout:
-            orientation: 'vertical'
-            size_hint: 0.5, None
-            height: dp(340)
-            spacing: dp(8)
-            pos_hint: {'center_x': 0.5, 'center_y': 0.22}
-
+            orientation: "vertical"
+            spacing: dp(10)
+            size_hint: None, None
+            width: dp(140)
+            height: dp(220)
+            pos_hint: {"x":0.04,"center_y":0.45}
             Button:
                 text: "Study"
-                on_release: app.go_study()
+                on_release: app.go("study")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+                font_size: "16sp"
             Button:
                 text: "Gacha"
-                on_release: app.go_gacha()
+                on_release: app.go("gacha")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+                font_size: "16sp"
+            Button:
+                text: "Achievements"
+                on_release: app.go("achievements")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+                font_size: "16sp"
+
+        # Right side buttons
+        BoxLayout:
+            orientation: "vertical"
+            spacing: dp(10)
+            size_hint: None, None
+            width: dp(140)
+            height: dp(150)
+            pos_hint: {"right":0.96,"center_y":0.45}
             Button:
                 text: "Inventory"
-                on_release: app.go_inventory()
+                on_release: app.go("inventory")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+                font_size: "16sp"
             Button:
                 text: "Settings"
-                on_release: app.go_settings()
-            Button:
-                text: "Logout"
-                on_release: app.logout()
+                on_release: app.go("settings")
+                background_color: app.theme.card
+                color: app.theme.text
+                size_hint_y: None
+                height: dp(70)
+                font_size: "16sp"
+        BoxLayout:
+            size_hint: 0.9, None
+            height: dp(40)
+            pos_hint: {"center_x":0.5,"y":0.02}
+            spacing: dp(8)
+            Label:
+                id: today_goal
+                text: ""
+                color: app.theme.muted
