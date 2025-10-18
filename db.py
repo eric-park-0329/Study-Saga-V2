@@ -178,17 +178,15 @@ def init_items():
     x.execute('SELECT COUNT(*) as cnt FROM items')
     if x.fetchone()['cnt'] == 0:
         items = [
-            # Boost items
+            # Bronze items
             ('Magic Book', 'boost', 'bronze', 5, 10, 'A mystical tome that boosts learning', None),
-            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power', None),
-            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom', None),
             ('Study Potion', 'consumable', 'bronze', 3, 5, 'Temporary focus boost', None),
+            # Silver items
+            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power', None),
             ('Lucky Charm', 'boost', 'silver', 0, 20, 'Increases crystal drops', None),
+            # Gold items
+            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom', None),
             ('Epic Scroll', 'boost', 'gold', 25, 20, 'Legendary knowledge scroll', None),
-            # Cosmetic items (character customization)
-            ('Red Cape', 'cosmetic', 'silver', 0, 0, 'A stylish red cape for heroes', 'attached_assets/assets/cape_red.png'),
-            ('Short Hair', 'cosmetic', 'bronze', 0, 0, 'Trendy short hairstyle', 'attached_assets/assets/hairstyle_short.png'),
-            ('Basic Hat', 'cosmetic', 'bronze', 0, 0, 'Simple but stylish hat', 'attached_assets/assets/hat_basic.png'),
         ]
         x.executemany('''INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description, image_path)
                          VALUES (?, ?, ?, ?, ?, ?, ?)''', items)

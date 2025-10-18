@@ -349,7 +349,7 @@ class StudySagaApp(App):
             pass
         
     def do_gacha(self, tier):
-        """Perform gacha roll"""
+        """Perform gacha roll with probability-based rarity selection"""
         costs = {"bronze": 10, "silver": 30, "gold": 60}
         cost = costs.get(tier, 10)
         
@@ -370,13 +370,37 @@ class StudySagaApp(App):
         DB.update_achievement(uid, "Gacha Master", 1)  # 50 rolls
         DB.update_achievement(uid, "Gacha Addict", 1)  # 100 rolls
         
-        # Get items of this rarity
-        items = DB.get_items(tier)
+        # Probability-based rarity selection
+        # Bronze gacha: bronze 90%, silver 9%, gold 1%
+        # Silver gacha: bronze 70%, silver 25%, gold 5%
+        # Gold gacha: bronze 50%, silver 40%, gold 10%
+        probabilities = {
+            "bronze": {"bronze": 90, "silver": 9, "gold": 1},
+            "silver": {"bronze": 70, "silver": 25, "gold": 5},
+            "gold": {"bronze": 50, "silver": 40, "gold": 10}
+        }
+        
+        # Get probability distribution for this tier
+        prob = probabilities.get(tier, probabilities["bronze"])
+        
+        # Random roll (0-100)
+        roll = random.randint(1, 100)
+        
+        # Determine rarity based on probability
+        if roll <= prob["bronze"]:
+            selected_rarity = "bronze"
+        elif roll <= prob["bronze"] + prob["silver"]:
+            selected_rarity = "silver"
+        else:
+            selected_rarity = "gold"
+        
+        # Get items of selected rarity
+        items = DB.get_items(selected_rarity)
         if not items:
             items = DB.get_items()  # Fallback to all items
         
         if items:
-            # Random item
+            # Random item from selected rarity
             item = random.choice(items)
             
             # Add to inventory
@@ -386,11 +410,9 @@ class StudySagaApp(App):
             inventory = DB.get_inventory(uid)
             total_items = len(inventory)
             unique_items = len(set(i['item_id'] for i in inventory))
-            cosmetic_items = len([i for i in inventory if i.get('type') == 'cosmetic'])
             
             DB.set_achievement_progress(uid, "Collector", unique_items)  # 5 unique items
             DB.set_achievement_progress(uid, "Hoarder", total_items)  # 15 total items
-            DB.set_achievement_progress(uid, "Fashion Icon", cosmetic_items)  # 3 cosmetic items
             
             # Lucky Strike achievement (gold rarity)
             if item["rarity"] == "gold":

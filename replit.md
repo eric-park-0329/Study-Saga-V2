@@ -45,12 +45,14 @@ Study Saga is a gamified study tracker built with Python and Kivy. It combines p
 1. **User Authentication** - Email-based login/register with gender selection
 2. **Animated Home Screen** - Gender-based animated backgrounds (cozy study room scenes)
 3. **Study Sessions** - Timer-based study tracking with crystal rewards (1 crystal/min)
-4. **Gacha System** - Bronze (10), Silver (30), Gold (60) crystal rolls for items
+4. **Gacha System** - Probability-based item rolls with 3 tiers:
+   - Bronze (10💎): 90% bronze, 9% silver, 1% gold
+   - Silver (30💎): 70% bronze, 25% silver, 5% gold
+   - Gold (60💎): 50% bronze, 40% silver, 10% gold
 5. **Inventory** - Item collection with search and filter by rarity
-6. **Achievements** - 5 achievements with automatic progress tracking
+6. **Achievements** - 20 achievements with automatic progress tracking
 7. **Settings** - Nickname, gender, dark mode, daily goal customization
 8. **Weekly Stats** - Visual progress bars for the past 7 days
-9. **Cosmetic Items** - Character customization items (capes, hairstyles, hats) from gacha
 
 ### Database Schema
 - **users** - User accounts (email, password_hash, nickname, gender, crystals, dark_mode, daily_goal_minutes)
@@ -88,10 +90,9 @@ Study Saga is a gamified study tracker built with Python and Kivy. It combines p
 - Weekly Hero - Complete 5 study sessions in a week
 - Weekly Champion - Complete 10 study sessions in a week
 
-**Collection (3):**
+**Collection (2):**
 - Collector - Own 5 different items
 - Hoarder - Own 15 items total
-- Fashion Icon - Collect all 3 cosmetic items
 
 **Special (2):**
 - Lucky Strike - Get a gold rarity item from gacha
