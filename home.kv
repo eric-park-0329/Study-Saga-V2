@@ -1,13 +1,15 @@
 #:kivy 2.3.0
 <HomeScreen>:
     name: "home"
-    canvas.before:
-        Color:
-            rgba: app.theme.bg
-        Rectangle:
-            pos: self.pos
-            size: self.size
     FloatLayout:
+        # Animated background
+        Image:
+            id: background_gif
+            source: ""
+            fit_mode: "fill"
+            pos: self.parent.pos
+            size: self.parent.size
+            anim_delay: 0.1
         Label:
             id: hello
             text: "Hi, {}!  ✨  Crystals: {}".format(app.profile.get("nickname",""), app.crystals)

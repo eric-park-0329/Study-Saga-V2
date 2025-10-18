@@ -172,13 +172,16 @@ class StudySagaApp(App):
             self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}!  ✨  Crystals: {self.crystals}"
             self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
             
-            # Set character sprite based on gender
+            # Set background and character sprite based on gender
             gender = self.profile.get("gender", "female")
             if gender == "male":
+                self.home.ids.background_gif.source = "attached_assets/background_male.gif"
                 self.home.ids.character_sprite.source = "attached_assets/assets/base_male.png"
             else:
+                self.home.ids.background_gif.source = "attached_assets/background_female.gif"
                 self.home.ids.character_sprite.source = "attached_assets/assets/base_female.png"
-        except:
+        except Exception as e:
+            print(f"Error updating home screen: {e}")
             pass
 
     def refresh_study(self):

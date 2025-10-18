@@ -74,6 +74,13 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
+- **2025-10-18**: Animated background system
+  - Added gender-based animated GIF backgrounds to home screen
+  - Male background: Cozy study room with male character (3.87 MB)
+  - Female background: Cozy study room with female character (4.01 MB)
+  - Backgrounds auto-switch when gender changes in Settings
+  - Animated rain through window and fireplace flames
+
 - **2025-10-18**: Complete feature implementation
   - Implemented all core features (study, gacha, inventory, achievements, settings)
   - Expanded database with 5 new tables
