@@ -171,6 +171,13 @@ class StudySagaApp(App):
         try:
             self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}!  ✨  Crystals: {self.crystals}"
             self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
+            
+            # Set character sprite based on gender
+            gender = self.profile.get("gender", "female")
+            if gender == "male":
+                self.home.ids.character_sprite.source = "attached_assets/assets/base_male.png"
+            else:
+                self.home.ids.character_sprite.source = "attached_assets/assets/base_female.png"
         except:
             pass
 

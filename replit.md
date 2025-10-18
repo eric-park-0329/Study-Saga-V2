@@ -34,12 +34,13 @@ Study Saga is a gamified study tracker built with Python and Kivy. It combines p
 
 ### Core Features
 1. **User Authentication** - Email-based login/register with gender selection
-2. **Study Sessions** - Timer-based study tracking with crystal rewards (1 crystal/min)
-3. **Gacha System** - Bronze (10), Silver (30), Gold (60) crystal rolls for items
-4. **Inventory** - Item collection with search and filter by rarity
-5. **Achievements** - 5 achievements with automatic progress tracking
-6. **Settings** - Nickname, gender, dark mode, daily goal customization
-7. **Weekly Stats** - Visual progress bars for the past 7 days
+2. **Character Display** - Gender-based character sprites on home screen (male/female)
+3. **Study Sessions** - Timer-based study tracking with crystal rewards (1 crystal/min)
+4. **Gacha System** - Bronze (10), Silver (30), Gold (60) crystal rolls for items
+5. **Inventory** - Item collection with search and filter by rarity
+6. **Achievements** - 5 achievements with automatic progress tracking
+7. **Settings** - Nickname, gender, dark mode, daily goal customization
+8. **Weekly Stats** - Visual progress bars for the past 7 days
 
 ### Database Schema
 - **users** - User accounts (email, password_hash, nickname, gender, crystals, dark_mode, daily_goal_minutes)
