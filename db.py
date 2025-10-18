@@ -236,11 +236,40 @@ def init_achievements(uid):
     x.execute('SELECT COUNT(*) as cnt FROM achievements WHERE user_id=?', (uid,))
     if x.fetchone()['cnt'] == 0:
         achs = [
+            # Beginner achievements
             (uid, 'First Study', 'Complete your first study session', 0, 1),
+            (uid, 'Getting Started', 'Study for 30 minutes total', 0, 30),
+            (uid, 'First Roll', 'Perform your first gacha roll', 0, 1),
+            
+            # Study achievements
+            (uid, 'Study Novice', 'Study for 2 hours total', 0, 120),
             (uid, 'Study Warrior', 'Study for 10 hours total', 0, 600),
+            (uid, 'Study Master', 'Study for 50 hours total', 0, 3000),
+            (uid, 'Study Legend', 'Study for 100 hours total', 0, 6000),
+            
+            # Crystal achievements
+            (uid, 'Pocket Change', 'Earn 100 crystals', 0, 100),
             (uid, 'Crystal Collector', 'Earn 1000 crystals', 0, 1000),
+            (uid, 'Crystal Hoarder', 'Earn 5000 crystals', 0, 5000),
+            (uid, 'Crystal Tycoon', 'Earn 10000 crystals', 0, 10000),
+            
+            # Gacha achievements
+            (uid, 'Gacha Beginner', 'Perform 10 gacha rolls', 0, 10),
             (uid, 'Gacha Master', 'Perform 50 gacha rolls', 0, 50),
+            (uid, 'Gacha Addict', 'Perform 100 gacha rolls', 0, 100),
+            
+            # Weekly achievements
             (uid, 'Weekly Hero', 'Complete 5 study sessions in a week', 0, 5),
+            (uid, 'Weekly Champion', 'Complete 10 study sessions in a week', 0, 10),
+            
+            # Collection achievements
+            (uid, 'Collector', 'Own 5 different items', 0, 5),
+            (uid, 'Hoarder', 'Own 15 items total', 0, 15),
+            (uid, 'Fashion Icon', 'Collect all 3 cosmetic items', 0, 3),
+            
+            # Special achievements
+            (uid, 'Lucky Strike', 'Get a gold rarity item from gacha', 0, 1),
+            (uid, 'Marathon Runner', 'Complete a 60 minute study session', 0, 1),
         ]
         x.executemany('''INSERT INTO achievements(user_id, name, description, progress, goal)
                          VALUES (?, ?, ?, ?, ?)''', achs)

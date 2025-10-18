@@ -283,13 +283,30 @@ class StudySagaApp(App):
         
         # Update achievements
         uid = self.profile["id"]
-        DB.update_achievement(uid, "First Study", 1)  # First study session
-        DB.update_achievement(uid, "Study Warrior", self.study_duration)  # Total minutes
-        DB.update_achievement(uid, "Weekly Hero", 1)  # Sessions this week
         
-        # Check total crystals earned for Crystal Collector
+        # Study session achievements
+        DB.update_achievement(uid, "First Study", 1)  # First study session
+        total_study_minutes = DB.get_total_study_minutes(uid)
+        DB.set_achievement_progress(uid, "Getting Started", total_study_minutes)  # 30 min
+        DB.set_achievement_progress(uid, "Study Novice", total_study_minutes)  # 2 hours
+        DB.set_achievement_progress(uid, "Study Warrior", total_study_minutes)  # 10 hours
+        DB.set_achievement_progress(uid, "Study Master", total_study_minutes)  # 50 hours
+        DB.set_achievement_progress(uid, "Study Legend", total_study_minutes)  # 100 hours
+        
+        # Weekly achievements
+        DB.update_achievement(uid, "Weekly Hero", 1)  # 5 sessions
+        DB.update_achievement(uid, "Weekly Champion", 1)  # 10 sessions
+        
+        # Marathon achievement (60 min single session)
+        if self.study_duration >= 60:
+            DB.update_achievement(uid, "Marathon Runner", 1)
+        
+        # Crystal achievements
         total_crystals = DB.get_total_crystals_earned(uid)
-        DB.set_achievement_progress(uid, "Crystal Collector", total_crystals)
+        DB.set_achievement_progress(uid, "Pocket Change", total_crystals)  # 100
+        DB.set_achievement_progress(uid, "Crystal Collector", total_crystals)  # 1000
+        DB.set_achievement_progress(uid, "Crystal Hoarder", total_crystals)  # 5000
+        DB.set_achievement_progress(uid, "Crystal Tycoon", total_crystals)  # 10000
         
         # Update UI
         try:
@@ -346,8 +363,12 @@ class StudySagaApp(App):
         # Deduct crystals
         self.crystals = DB.update_crystals(self.profile["id"], -cost)
         
-        # Update Gacha Master achievement
-        DB.update_achievement(self.profile["id"], "Gacha Master", 1)
+        # Update Gacha achievements
+        uid = self.profile["id"]
+        DB.update_achievement(uid, "First Roll", 1)  # First roll
+        DB.update_achievement(uid, "Gacha Beginner", 1)  # 10 rolls
+        DB.update_achievement(uid, "Gacha Master", 1)  # 50 rolls
+        DB.update_achievement(uid, "Gacha Addict", 1)  # 100 rolls
         
         # Get items of this rarity
         items = DB.get_items(tier)
@@ -359,7 +380,21 @@ class StudySagaApp(App):
             item = random.choice(items)
             
             # Add to inventory
-            DB.add_to_inventory(self.profile["id"], item["id"])
+            DB.add_to_inventory(uid, item["id"])
+            
+            # Update collection achievements
+            inventory = DB.get_inventory(uid)
+            total_items = len(inventory)
+            unique_items = len(set(i['item_id'] for i in inventory))
+            cosmetic_items = len([i for i in inventory if i.get('type') == 'cosmetic'])
+            
+            DB.set_achievement_progress(uid, "Collector", unique_items)  # 5 unique items
+            DB.set_achievement_progress(uid, "Hoarder", total_items)  # 15 total items
+            DB.set_achievement_progress(uid, "Fashion Icon", cosmetic_items)  # 3 cosmetic items
+            
+            # Lucky Strike achievement (gold rarity)
+            if item["rarity"] == "gold":
+                DB.update_achievement(uid, "Lucky Strike", 1)
             
             # Show result
             rarity_emoji = {"bronze": "🥉", "silver": "🥈", "gold": "🥇"}

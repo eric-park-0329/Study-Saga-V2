@@ -60,12 +60,42 @@ Study Saga is a gamified study tracker built with Python and Kivy. It combines p
 - **inventory** - User-owned items (user_id, item_id, acquired_at, equipped)
 - **achievements** - User achievements (name, description, progress, goal, completed, completed_at)
 
-### Achievements System
-1. **First Study** - Complete your first study session (0/1)
-2. **Study Warrior** - Study for 10 hours total (0/600 minutes)
-3. **Crystal Collector** - Earn 1000 crystals (0/1000)
-4. **Gacha Master** - Perform 50 gacha rolls (0/50)
-5. **Weekly Hero** - Complete 5 study sessions in a week (0/5)
+### Achievements System (21 Total)
+
+**Beginner (3):**
+- First Study - Complete your first study session
+- Getting Started - Study for 30 minutes total
+- First Roll - Perform your first gacha roll
+
+**Study (4):**
+- Study Novice - Study for 2 hours total
+- Study Warrior - Study for 10 hours total
+- Study Master - Study for 50 hours total
+- Study Legend - Study for 100 hours total
+
+**Crystal (4):**
+- Pocket Change - Earn 100 crystals
+- Crystal Collector - Earn 1000 crystals
+- Crystal Hoarder - Earn 5000 crystals
+- Crystal Tycoon - Earn 10000 crystals
+
+**Gacha (3):**
+- Gacha Beginner - Perform 10 gacha rolls
+- Gacha Master - Perform 50 gacha rolls
+- Gacha Addict - Perform 100 gacha rolls
+
+**Weekly (2):**
+- Weekly Hero - Complete 5 study sessions in a week
+- Weekly Champion - Complete 10 study sessions in a week
+
+**Collection (3):**
+- Collector - Own 5 different items
+- Hoarder - Own 15 items total
+- Fashion Icon - Collect all 3 cosmetic items
+
+**Special (2):**
+- Lucky Strike - Get a gold rarity item from gacha
+- Marathon Runner - Complete a 60 minute study session
 
 ## Setup Notes
 
