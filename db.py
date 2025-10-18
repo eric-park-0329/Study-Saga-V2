@@ -58,6 +58,41 @@ def bootstrap():
         user_id INTEGER,
         expires_at INTEGER
     );
+    CREATE TABLE IF NOT EXISTS study_sessions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        start_time INTEGER,
+        end_time INTEGER,
+        duration_minutes INTEGER,
+        crystals_earned INTEGER DEFAULT 0,
+        completed INTEGER DEFAULT 1
+    );
+    CREATE TABLE IF NOT EXISTS items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        type TEXT,
+        rarity TEXT,
+        boost_exp_pct INTEGER DEFAULT 0,
+        boost_crystal_pct INTEGER DEFAULT 0,
+        description TEXT
+    );
+    CREATE TABLE IF NOT EXISTS inventory(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        item_id INTEGER,
+        acquired_at INTEGER,
+        equipped INTEGER DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS achievements(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        name TEXT,
+        description TEXT,
+        progress INTEGER DEFAULT 0,
+        goal INTEGER DEFAULT 100,
+        completed INTEGER DEFAULT 0,
+        completed_at INTEGER
+    );
     ''')
     c.commit(); c.close()
     _migrate()
@@ -89,3 +124,179 @@ def set_gender(uid, gender):
     c=_c(); x=c.cursor()
     x.execute('UPDATE users SET gender=? WHERE id=?',(gender,uid))
     c.commit(); c.close()
+
+def update_user_settings(uid, nickname, gender, dark_mode, daily_goal):
+    c=_c(); x=c.cursor()
+    x.execute('''UPDATE users SET nickname=?, gender=?, dark_mode=?, daily_goal_minutes=? 
+                 WHERE id=?''', (nickname, gender, dark_mode, daily_goal, uid))
+    c.commit(); c.close()
+
+def get_user(uid):
+    c=_c(); x=c.cursor()
+    x.execute('SELECT * FROM users WHERE id=?', (uid,))
+    r=x.fetchone(); c.close()
+    return dict(r) if r else None
+
+def update_crystals(uid, amount):
+    c=_c(); x=c.cursor()
+    x.execute('UPDATE users SET crystals=crystals+? WHERE id=?', (amount, uid))
+    c.commit()
+    x.execute('SELECT crystals FROM users WHERE id=?', (uid,))
+    new_val = x.fetchone()['crystals']
+    c.close()
+    return new_val
+
+def add_study_session(uid, duration_minutes, crystals_earned):
+    c=_c(); x=c.cursor()
+    now = int(time.time())
+    x.execute('''INSERT INTO study_sessions(user_id, start_time, end_time, duration_minutes, crystals_earned)
+                 VALUES (?, ?, ?, ?, ?)''', (uid, now-duration_minutes*60, now, duration_minutes, crystals_earned))
+    c.commit(); c.close()
+
+def get_study_sessions(uid, days=7):
+    c=_c(); x=c.cursor()
+    cutoff = int(time.time()) - days*24*3600
+    x.execute('''SELECT * FROM study_sessions WHERE user_id=? AND start_time>=? 
+                 ORDER BY start_time DESC''', (uid, cutoff))
+    r = [dict(row) for row in x.fetchall()]
+    c.close()
+    return r
+
+def init_items():
+    """Initialize default items in database"""
+    c=_c(); x=c.cursor()
+    x.execute('SELECT COUNT(*) as cnt FROM items')
+    if x.fetchone()['cnt'] == 0:
+        items = [
+            ('Magic Book', 'boost', 'bronze', 5, 10, 'A mystical tome that boosts learning'),
+            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power'),
+            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom'),
+            ('Study Potion', 'consumable', 'bronze', 3, 5, 'Temporary focus boost'),
+            ('Lucky Charm', 'boost', 'silver', 0, 20, 'Increases crystal drops'),
+            ('Epic Scroll', 'boost', 'gold', 25, 20, 'Legendary knowledge scroll'),
+        ]
+        x.executemany('''INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description)
+                         VALUES (?, ?, ?, ?, ?, ?)''', items)
+        c.commit()
+    c.close()
+
+def get_items(rarity=None):
+    c=_c(); x=c.cursor()
+    if rarity and rarity != 'all':
+        x.execute('SELECT * FROM items WHERE rarity=?', (rarity,))
+    else:
+        x.execute('SELECT * FROM items')
+    r = [dict(row) for row in x.fetchall()]
+    c.close()
+    return r
+
+def get_inventory(uid):
+    c=_c(); x=c.cursor()
+    x.execute('''SELECT i.id, i.user_id, i.item_id, i.acquired_at, i.equipped,
+                        it.name, it.type, it.rarity, it.boost_exp_pct, it.boost_crystal_pct, it.description
+                 FROM inventory i 
+                 JOIN items it ON i.item_id = it.id 
+                 WHERE i.user_id=?
+                 ORDER BY i.acquired_at DESC''', (uid,))
+    r = [dict(row) for row in x.fetchall()]
+    c.close()
+    return r
+
+def add_to_inventory(uid, item_id):
+    c=_c(); x=c.cursor()
+    now = int(time.time())
+    x.execute('INSERT INTO inventory(user_id, item_id, acquired_at) VALUES (?, ?, ?)', (uid, item_id, now))
+    c.commit(); c.close()
+
+def get_achievements(uid):
+    c=_c(); x=c.cursor()
+    x.execute('SELECT * FROM achievements WHERE user_id=? ORDER BY completed DESC, id ASC', (uid,))
+    r = [dict(row) for row in x.fetchall()]
+    c.close()
+    return r
+
+def init_achievements(uid):
+    """Initialize default achievements for a user"""
+    c=_c(); x=c.cursor()
+    x.execute('SELECT COUNT(*) as cnt FROM achievements WHERE user_id=?', (uid,))
+    if x.fetchone()['cnt'] == 0:
+        achs = [
+            (uid, 'First Study', 'Complete your first study session', 0, 1),
+            (uid, 'Study Warrior', 'Study for 10 hours total', 0, 600),
+            (uid, 'Crystal Collector', 'Earn 1000 crystals', 0, 1000),
+            (uid, 'Gacha Master', 'Perform 50 gacha rolls', 0, 50),
+            (uid, 'Weekly Hero', 'Complete 5 study sessions in a week', 0, 5),
+        ]
+        x.executemany('''INSERT INTO achievements(user_id, name, description, progress, goal)
+                         VALUES (?, ?, ?, ?, ?)''', achs)
+        c.commit()
+    c.close()
+
+def update_achievement(uid, name, increment=1):
+    """Update achievement progress and mark as completed if goal reached"""
+    c=_c(); x=c.cursor()
+    
+    # Get current achievement
+    x.execute('SELECT * FROM achievements WHERE user_id=? AND name=?', (uid, name))
+    ach = x.fetchone()
+    
+    if not ach:
+        c.close()
+        return
+    
+    ach = dict(ach)
+    new_progress = ach['progress'] + increment
+    
+    # Check if completed
+    if new_progress >= ach['goal'] and not ach['completed']:
+        now = int(time.time())
+        x.execute('''UPDATE achievements SET progress=?, completed=1, completed_at=? 
+                     WHERE user_id=? AND name=?''', (new_progress, now, uid, name))
+    else:
+        x.execute('''UPDATE achievements SET progress=? 
+                     WHERE user_id=? AND name=?''', (new_progress, uid, name))
+    
+    c.commit()
+    c.close()
+
+def get_total_study_minutes(uid):
+    """Get total study minutes for user"""
+    c=_c(); x=c.cursor()
+    x.execute('SELECT SUM(duration_minutes) as total FROM study_sessions WHERE user_id=?', (uid,))
+    result = x.fetchone()
+    c.close()
+    return result['total'] or 0
+
+def get_total_crystals_earned(uid):
+    """Get total crystals earned from study sessions"""
+    c=_c(); x=c.cursor()
+    x.execute('SELECT SUM(crystals_earned) as total FROM study_sessions WHERE user_id=?', (uid,))
+    result = x.fetchone()
+    c.close()
+    return result['total'] or 0
+
+def set_achievement_progress(uid, name, new_progress):
+    """Set achievement progress to specific value and mark completed if goal reached"""
+    c=_c(); x=c.cursor()
+    
+    # Get current achievement
+    x.execute('SELECT * FROM achievements WHERE user_id=? AND name=?', (uid, name))
+    ach = x.fetchone()
+    
+    if not ach:
+        c.close()
+        return
+    
+    ach = dict(ach)
+    
+    # Check if should be completed
+    if new_progress >= ach['goal'] and not ach['completed']:
+        now = int(time.time())
+        x.execute('''UPDATE achievements SET progress=?, completed=1, completed_at=? 
+                     WHERE user_id=? AND name=?''', (new_progress, now, uid, name))
+    else:
+        x.execute('''UPDATE achievements SET progress=? 
+                     WHERE user_id=? AND name=?''', (new_progress, uid, name))
+    
+    c.commit()
+    c.close()

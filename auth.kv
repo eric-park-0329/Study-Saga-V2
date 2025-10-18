@@ -38,10 +38,30 @@
             background_color: app.theme.card
             cursor_color: app.theme.text
         BoxLayout:
+            size_hint: 0.5, None
+            height: dp(36)
+            spacing: dp(8)
+            pos_hint: {"center_x":0.5,"center_y":0.43}
+            Label:
+                text: "Gender:"
+                color: app.theme.muted
+                size_hint_x: 0.35
+            ToggleButton:
+                id: male
+                text: "♂"
+                group: "gender"
+                size_hint_x: 0.325
+            ToggleButton:
+                id: female
+                text: "♀"
+                group: "gender"
+                state: "down"
+                size_hint_x: 0.325
+        BoxLayout:
             size_hint: 0.7, None
             height: dp(44)
             spacing: dp(10)
-            pos_hint: {"center_x":0.5,"center_y":0.42}
+            pos_hint: {"center_x":0.5,"center_y":0.34}
             Button:
                 text: "Login"
                 on_release: app.do_login(email.text, pw.text)
@@ -49,7 +69,7 @@
                 color: app.theme.accent_text
             Button:
                 text: "Register"
-                on_release: app.do_register(email.text, pw.text)
+                on_release: app.do_register(email.text, pw.text, "male" if male.state=="down" else "female")
                 background_color: app.theme.card
                 color: app.theme.text
         Label:

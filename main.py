@@ -1,15 +1,14 @@
 
-import os, time
+import os, time, random
 os.environ["KIVY_NO_ARGS"]="1"
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
-from kivy.uix.togglebutton import ToggleButton
 from kivy.lang import Builder
+from kivy.clock import Clock
+from kivy.uix.progressbar import ProgressBar
 
 import db as DB
 import auth as AUTH
@@ -29,26 +28,7 @@ class AuthScreen(Screen):
     pass
 
 class HomeScreen(Screen):
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        root = BoxLayout(orientation="vertical", padding=20, spacing=8)
-        self.hello = Label(text="Hi!", font_size="22sp", size_hint_y=None, height=36)
-        
-        # Back to auth button
-        btn_logout = Button(text="Logout", size_hint_y=None, height=36)
-        btn_logout.bind(on_release=lambda _: App.get_running_app().go("auth"))
-        
-        # Navigation buttons
-        btns = BoxLayout(size_hint_y=None, height=44, spacing=10)
-        for name in ["Study","Gacha","Inventory","Settings","Achievements"]:
-            b = Button(text=name)
-            b.bind(on_release=lambda _b, n=name.lower(): App.get_running_app().go(n))
-            btns.add_widget(b)
-        
-        root.add_widget(self.hello)
-        root.add_widget(btns)
-        root.add_widget(btn_logout)
-        self.add_widget(root)
+    pass
 
 # Define other screens (will be styled by KV files)
 class StudyScreen(Screen):
@@ -79,11 +59,22 @@ class Theme:
     gold = (1.0, 0.84, 0.0, 1)
 
 class StudySagaApp(App):
-    user=None; profile={}; token=""; crystals=100
+    user=None
+    profile={"nickname":"","gender":"female"}
+    token=""
+    crystals=100
     theme = Theme()
+    
+    # Study session state
+    study_timer = None
+    study_start_time = 0
+    study_duration = 0
+    study_elapsed = 0
     
     def build(self):
         DB.bootstrap()
+        DB.init_items()
+        
         self.sm = ScreenManager(transition=NoTransition())
         
         # Add all screens
@@ -108,6 +99,20 @@ class StudySagaApp(App):
 
     def go(self, name): 
         if name in [s.name for s in self.sm.screens]:
+            # Load data when entering certain screens
+            if name == "home":
+                self.refresh_home()
+            elif name == "inventory":
+                self.refresh_inventory()
+            elif name == "gacha":
+                self.refresh_gacha()
+            elif name == "settings":
+                self.load_settings()
+            elif name == "achievements":
+                self.refresh_achievements()
+            elif name == "study":
+                self.refresh_study()
+            
             self.sm.current = name
         else:
             print(f"Screen '{name}' not found!")
@@ -129,6 +134,7 @@ class StudySagaApp(App):
         self.set_msg(msg)
         if not ok: 
             return
+        
         # Save profile and switch to Home
         self.user = user
         self.token = user["token"]
@@ -139,24 +145,369 @@ class StudySagaApp(App):
             "nickname": user.get("nickname",""),
             "gender": user.get("gender","female")
         }
-        self.home.hello.text = f"Hi, {self.profile.get('nickname','User')}! ({self.profile.get('gender','?')})"
+        
+        # Initialize achievements if first login
+        DB.init_achievements(user["id"])
+        
         self.go("home")
 
-    # Placeholder functions for KV files
-    def pomodoro_start(self, work_min, break_min, cycles):
-        print(f"Pomodoro: {work_min}min work, {break_min}min break, {cycles} cycles")
+    def refresh_home(self):
+        """Refresh home screen data"""
+        if not self.user:
+            return
         
+        # Update user data
+        user = DB.get_user(self.profile["id"])
+        if user:
+            self.crystals = user["crystals"]
+            self.profile["nickname"] = user.get("nickname", "")
+            self.profile["gender"] = user.get("gender", "female")
+        
+        # Update today's goal progress
+        sessions = DB.get_study_sessions(self.profile["id"], days=1)
+        today_minutes = sum(s["duration_minutes"] for s in sessions)
+        goal_minutes = user.get("daily_goal_minutes", 60)
+        
+        try:
+            self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}!  ✨  Crystals: {self.crystals}"
+            self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
+        except:
+            pass
+
+    def refresh_study(self):
+        """Refresh study screen with weekly data"""
+        if not self.user:
+            return
+        
+        try:
+            # Get weekly sessions
+            sessions = DB.get_study_sessions(self.profile["id"], days=7)
+            
+            # Group by day of week
+            from datetime import datetime, timedelta
+            today = datetime.now()
+            week_data = {}
+            for i in range(7):
+                day = (today - timedelta(days=6-i)).date()
+                week_data[day] = 0
+            
+            for s in sessions:
+                day = datetime.fromtimestamp(s["start_time"]).date()
+                if day in week_data:
+                    week_data[day] += s["duration_minutes"]
+            
+            # Create week progress bars
+            weekbars = self.study_screen.ids.weekbars
+            weekbars.clear_widgets()
+            
+            for day in sorted(week_data.keys()):
+                minutes = week_data[day]
+                max_min = 120  # max display
+                progress = min(1.0, minutes / max_min)
+                
+                bar = ProgressBar(max=1.0, value=progress)
+                weekbars.add_widget(bar)
+                
+        except Exception as e:
+            print(f"Error refreshing study: {e}")
+
+    # Study functions
     def study_start(self, minutes):
-        print(f"Study session: {minutes} minutes")
+        """Start a study session"""
+        if self.study_timer:
+            self.study_stop()
+        
+        self.study_duration = minutes
+        self.study_elapsed = 0
+        self.study_start_time = time.time()
+        
+        # Update UI
+        try:
+            self.study_screen.ids.status.text = f"Studying for {minutes} min..."
+            self.study_screen.ids.pbar.value = 0
+        except:
+            pass
+        
+        # Start timer (update every second)
+        self.study_timer = Clock.schedule_interval(self._study_tick, 1.0)
+        print(f"Study session started: {minutes} minutes")
+    
+    def _study_tick(self, dt):
+        """Update study progress"""
+        if not self.study_timer:
+            return False
+        
+        self.study_elapsed = int(time.time() - self.study_start_time)
+        remaining = max(0, self.study_duration * 60 - self.study_elapsed)
+        
+        # Update progress bar
+        progress = min(1.0, self.study_elapsed / (self.study_duration * 60))
+        
+        try:
+            self.study_screen.ids.pbar.value = progress
+            mins_left = remaining // 60
+            secs_left = remaining % 60
+            self.study_screen.ids.status.text = f"Time remaining: {mins_left:02d}:{secs_left:02d}"
+        except:
+            pass
+        
+        # Check if completed
+        if remaining <= 0:
+            self._study_complete()
+            return False
+        
+        return True
+    
+    def _study_complete(self):
+        """Complete study session and award rewards"""
+        if self.study_timer:
+            self.study_timer.cancel()
+            self.study_timer = None
+        
+        # Calculate rewards (1 crystal per minute)
+        crystals_earned = self.study_duration
+        
+        # Save session
+        DB.add_study_session(self.profile["id"], self.study_duration, crystals_earned)
+        
+        # Update crystals
+        self.crystals = DB.update_crystals(self.profile["id"], crystals_earned)
+        
+        # Update achievements
+        uid = self.profile["id"]
+        DB.update_achievement(uid, "First Study", 1)  # First study session
+        DB.update_achievement(uid, "Study Warrior", self.study_duration)  # Total minutes
+        DB.update_achievement(uid, "Weekly Hero", 1)  # Sessions this week
+        
+        # Check total crystals earned for Crystal Collector
+        total_crystals = DB.get_total_crystals_earned(uid)
+        DB.set_achievement_progress(uid, "Crystal Collector", total_crystals)
+        
+        # Update UI
+        try:
+            self.study_screen.ids.status.text = f"✅ Completed! +{crystals_earned} crystals"
+            self.study_screen.ids.pbar.value = 1.0
+        except:
+            pass
+        
+        # Refresh weekly bars
+        self.refresh_study()
+        
+        print(f"Study session completed! Earned {crystals_earned} crystals")
     
     def study_stop(self):
+        """Stop current study session"""
+        if self.study_timer:
+            self.study_timer.cancel()
+            self.study_timer = None
+        
+        try:
+            self.study_screen.ids.status.text = "Session stopped"
+            self.study_screen.ids.pbar.value = 0
+        except:
+            pass
+        
         print("Study session stopped")
+    
+    def pomodoro_start(self, work_min, break_min, cycles):
+        """Start pomodoro timer (simplified - just starts work session)"""
+        print(f"Pomodoro: {work_min}min work, {break_min}min break, {cycles} cycles")
+        self.study_start(work_min)
+
+    # Gacha functions
+    def refresh_gacha(self):
+        """Refresh gacha screen"""
+        try:
+            self.gacha_screen.ids.result.text = ""
+            self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
+        except:
+            pass
         
     def do_gacha(self, tier):
-        print(f"Gacha roll: {tier}")
+        """Perform gacha roll"""
+        costs = {"bronze": 10, "silver": 30, "gold": 60}
+        cost = costs.get(tier, 10)
         
+        if self.crystals < cost:
+            try:
+                self.gacha_screen.ids.result.text = "❌ Not enough crystals!"
+            except:
+                pass
+            return
+        
+        # Deduct crystals
+        self.crystals = DB.update_crystals(self.profile["id"], -cost)
+        
+        # Update Gacha Master achievement
+        DB.update_achievement(self.profile["id"], "Gacha Master", 1)
+        
+        # Get items of this rarity
+        items = DB.get_items(tier)
+        if not items:
+            items = DB.get_items()  # Fallback to all items
+        
+        if items:
+            # Random item
+            item = random.choice(items)
+            
+            # Add to inventory
+            DB.add_to_inventory(self.profile["id"], item["id"])
+            
+            # Show result
+            rarity_emoji = {"bronze": "🥉", "silver": "🥈", "gold": "🥇"}
+            emoji = rarity_emoji.get(item["rarity"], "🎁")
+            
+            try:
+                self.gacha_screen.ids.result.text = f"{emoji} {item['name']}\n{item['description']}"
+                self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
+            except:
+                pass
+            
+            print(f"Gacha roll ({tier}): Got {item['name']}")
+        else:
+            try:
+                self.gacha_screen.ids.result.text = "No items available"
+            except:
+                pass
+
+    # Inventory functions
     def refresh_inventory(self, search="", tier="all"):
-        print(f"Refresh inventory: search={search}, tier={tier}")
+        """Refresh inventory list"""
+        try:
+            grid = self.inventory_screen.ids.grid
+            grid.clear_widgets()
+            
+            # Get inventory
+            items = DB.get_inventory(self.profile["id"])
+            
+            # Filter
+            if search:
+                items = [i for i in items if search.lower() in i["name"].lower()]
+            if tier != "all":
+                items = [i for i in items if i["rarity"] == tier]
+            
+            # Display
+            if not items:
+                label = Label(text="No items found", color=self.theme.muted)
+                grid.add_widget(label)
+            else:
+                for item in items:
+                    # Create item row
+                    row = BoxLayout(size_hint_y=None, height=60, spacing=10)
+                    
+                    # Rarity indicator
+                    rarity_colors = {
+                        "bronze": self.theme.bronze,
+                        "silver": self.theme.silver,
+                        "gold": self.theme.gold
+                    }
+                    color = rarity_colors.get(item["rarity"], self.theme.text)
+                    
+                    # Item info
+                    info = f"{item['name']}\n+{item['boost_exp_pct']}% EXP, +{item['boost_crystal_pct']}% Crystals"
+                    label = Label(text=info, color=color, halign="left", valign="middle")
+                    label.text_size = (label.width, None)
+                    label.bind(size=lambda lb, *_: setattr(lb, 'text_size', (lb.width, None)))
+                    
+                    row.add_widget(label)
+                    grid.add_widget(row)
+        except Exception as e:
+            print(f"Error refreshing inventory: {e}")
+
+    # Settings functions
+    def load_settings(self):
+        """Load current settings into UI"""
+        if not self.user:
+            return
+        
+        user = DB.get_user(self.profile["id"])
+        if not user:
+            return
+        
+        try:
+            self.settings_screen.ids.nick.text = user.get("nickname", "")
+            
+            # Gender
+            if user.get("gender") == "male":
+                self.settings_screen.ids.male.state = "down"
+                self.settings_screen.ids.female.state = "normal"
+            else:
+                self.settings_screen.ids.male.state = "normal"
+                self.settings_screen.ids.female.state = "down"
+            
+            # Dark mode
+            self.settings_screen.ids.dark.active = bool(user.get("dark_mode", 0))
+            
+            # Goal
+            self.settings_screen.ids.goal.value = user.get("daily_goal_minutes", 60)
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+    
+    def save_settings(self, nickname, male_state, female_state, dark_mode, goal):
+        """Save settings"""
+        if not self.user:
+            return
+        
+        gender = "male" if male_state == "down" else "female"
+        dark_int = 1 if dark_mode else 0
+        
+        DB.update_user_settings(self.profile["id"], nickname, gender, dark_int, goal)
+        
+        # Update local profile
+        self.profile["nickname"] = nickname
+        self.profile["gender"] = gender
+        
+        print("Settings saved!")
+        self.go("home")
+
+    # Achievements functions
+    def refresh_achievements(self):
+        """Refresh achievements list"""
+        if not self.user:
+            return
+        
+        try:
+            grid = self.achievements_screen.ids.grid
+            grid.clear_widgets()
+            
+            achievements = DB.get_achievements(self.profile["id"])
+            
+            if not achievements:
+                label = Label(text="No achievements yet", color=self.theme.muted)
+                grid.add_widget(label)
+            else:
+                for ach in achievements:
+                    row = BoxLayout(orientation="vertical", size_hint_y=None, height=80, spacing=4)
+                    
+                    # Title
+                    status = "✅" if ach["completed"] else "⏳"
+                    title = Label(
+                        text=f"{status} {ach['name']}", 
+                        color=self.theme.text if ach["completed"] else self.theme.muted,
+                        halign="left",
+                        valign="top",
+                        font_size="16sp"
+                    )
+                    title.text_size = (title.width, None)
+                    title.bind(size=lambda lb, *_: setattr(lb, 'text_size', (lb.width, None)))
+                    
+                    # Progress
+                    progress_pct = min(100, int(100 * ach["progress"] / ach["goal"])) if ach["goal"] > 0 else 0
+                    desc = Label(
+                        text=f"{ach['description']} ({ach['progress']}/{ach['goal']} - {progress_pct}%)",
+                        color=self.theme.muted,
+                        halign="left",
+                        valign="top",
+                        font_size="12sp"
+                    )
+                    desc.text_size = (desc.width, None)
+                    desc.bind(size=lambda lb, *_: setattr(lb, 'text_size', (lb.width, None)))
+                    
+                    row.add_widget(title)
+                    row.add_widget(desc)
+                    grid.add_widget(row)
+        except Exception as e:
+            print(f"Error refreshing achievements: {e}")
 
 if __name__=="__main__":
     StudySagaApp().run()

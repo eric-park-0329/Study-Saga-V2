@@ -54,3 +54,11 @@
             halign: "center"
             valign: "middle"
             text_size: self.size
+        Button:
+            text: "← Back"
+            size_hint: 0.3, None
+            height: dp(36)
+            pos_hint: {"x":0.04,"y":0.02}
+            on_release: app.go("home")
+            background_color: app.theme.card
+            color: app.theme.text

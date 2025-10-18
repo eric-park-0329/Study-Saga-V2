@@ -45,3 +45,12 @@
                 height: self.minimum_height
                 row_default_height: dp(60)
                 row_force_default: True
+        Button:
+            text: "← Back"
+            size_hint: None, None
+            width: dp(100)
+            height: dp(36)
+            pos_hint: {"x":0.02,"y":0.01}
+            on_release: app.go("home")
+            background_color: app.theme.card
+            color: app.theme.text
