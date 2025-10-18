@@ -115,11 +115,10 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
-- **2025-10-18**: Unicode/Emoji 문제 해결
-  - 모든 emoji를 텍스트로 변경 (♂/♀ → Male/Female, 📚/🎁/🏆/🎒/⚙️ → 텍스트)
-  - 가챠 결과 prefix 변경 (🥉/🥈/🥇 → [BRONZE]/[SILVER]/[GOLD])
-  - 업적 상태 표시 변경 (✅/⏳ → [OK]/[ ])
-  - VNC 환경에서 [X] 표시 문제 완전 해결
+- **2025-10-18**: Emoji 복원
+  - 모든 emoji를 다시 추가하여 UI를 더 시각적으로 개선
+  - 폰트 크기 조정으로 emoji 가독성 향상
+  - VNC 환경에서 일부 emoji는 □로 표시될 수 있음 (시스템 폰트 제약)
 
 - **2025-10-18**: Gacha 시스템 확률 기반 개편
   - Cosmetic 아이템 완전 제거 (cape, hair, hat)
