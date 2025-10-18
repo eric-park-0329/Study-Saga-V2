@@ -38,6 +38,15 @@ def _migrate():
                 c.commit()
             except sqlite3.OperationalError:
                 pass
+    
+    # items.image_path
+    if not _has_col(x, "items", "image_path"):
+        try:
+            x.execute("ALTER TABLE items ADD COLUMN image_path TEXT")
+            c.commit()
+        except sqlite3.OperationalError:
+            pass
+    
     c.close()
 
 def bootstrap():
@@ -74,7 +83,8 @@ def bootstrap():
         rarity TEXT,
         boost_exp_pct INTEGER DEFAULT 0,
         boost_crystal_pct INTEGER DEFAULT 0,
-        description TEXT
+        description TEXT,
+        image_path TEXT
     );
     CREATE TABLE IF NOT EXISTS inventory(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,15 +178,20 @@ def init_items():
     x.execute('SELECT COUNT(*) as cnt FROM items')
     if x.fetchone()['cnt'] == 0:
         items = [
-            ('Magic Book', 'boost', 'bronze', 5, 10, 'A mystical tome that boosts learning'),
-            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power'),
-            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom'),
-            ('Study Potion', 'consumable', 'bronze', 3, 5, 'Temporary focus boost'),
-            ('Lucky Charm', 'boost', 'silver', 0, 20, 'Increases crystal drops'),
-            ('Epic Scroll', 'boost', 'gold', 25, 20, 'Legendary knowledge scroll'),
+            # Boost items
+            ('Magic Book', 'boost', 'bronze', 5, 10, 'A mystical tome that boosts learning', None),
+            ('Crystal Staff', 'boost', 'silver', 10, 15, 'Ancient staff radiating power', None),
+            ('Golden Crown', 'boost', 'gold', 20, 25, 'Crown of ultimate wisdom', None),
+            ('Study Potion', 'consumable', 'bronze', 3, 5, 'Temporary focus boost', None),
+            ('Lucky Charm', 'boost', 'silver', 0, 20, 'Increases crystal drops', None),
+            ('Epic Scroll', 'boost', 'gold', 25, 20, 'Legendary knowledge scroll', None),
+            # Cosmetic items (character customization)
+            ('Red Cape', 'cosmetic', 'silver', 0, 0, 'A stylish red cape for heroes', 'attached_assets/assets/cape_red.png'),
+            ('Short Hair', 'cosmetic', 'bronze', 0, 0, 'Trendy short hairstyle', 'attached_assets/assets/hairstyle_short.png'),
+            ('Basic Hat', 'cosmetic', 'bronze', 0, 0, 'Simple but stylish hat', 'attached_assets/assets/hat_basic.png'),
         ]
-        x.executemany('''INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description)
-                         VALUES (?, ?, ?, ?, ?, ?)''', items)
+        x.executemany('''INSERT INTO items(name, type, rarity, boost_exp_pct, boost_crystal_pct, description, image_path)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)''', items)
         c.commit()
     c.close()
 

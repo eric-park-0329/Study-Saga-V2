@@ -29,7 +29,16 @@ Study Saga is a gamified study tracker built with Python and Kivy. It combines p
 ├── inventory.kv                 # Inventory screen UI
 ├── settings.kv                  # Settings screen UI
 ├── achievements.kv              # Achievements screen UI
-└── studysaga.sqlite3            # SQLite database
+├── studysaga.sqlite3            # SQLite database
+└── attached_assets/
+    ├── background_male.gif      # Animated background (male)
+    ├── background_female.gif    # Animated background (female)
+    └── assets/
+        ├── base_male.png        # Male character sprite
+        ├── base_female.png      # Female character sprite
+        ├── cape_red.png         # Red cape cosmetic
+        ├── hairstyle_short.png  # Short hair cosmetic
+        └── hat_basic.png        # Basic hat cosmetic
 ```
 
 ### Core Features
