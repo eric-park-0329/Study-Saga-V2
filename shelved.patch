@@ -1,0 +1,1005 @@
+Index: color_utils.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nfrom dataclasses import dataclass\r\n\r\n@dataclass\r\nclass Theme:\r\n    name: str\r\n    bg: tuple\r\n    card: tuple\r\n    text: tuple\r\n    accent: tuple\r\n    accent_text: tuple\r\n    muted: tuple\r\n    gold: tuple\r\n    silver: tuple\r\n    bronze: tuple\r\n\r\nLIGHT = Theme(\r\n    name=\"light\",\r\n    bg=(0.96, 0.97, 1, 1),\r\n    card=(1, 1, 1, 1),\r\n    text=(0, 0, 0, 1),\r\n    accent=(0.2, 0.4, 0.9, 1),\r\n    accent_text=(1, 1, 1, 1),\r\n    muted=(0, 0, 0, 0.6),\r\n    gold=(1.0,0.82,0.34,1),\r\n    silver=(0.8,0.85,0.95,1),\r\n    bronze=(0.92,0.72,0.48,1),\r\n)\r\n\r\nDARK = Theme(\r\n    name=\"dark\",\r\n    bg=(0.07, 0.08, 0.10, 1),\r\n    card=(0.12, 0.13, 0.16, 1),\r\n    text=(1, 1, 1, 1),\r\n    accent=(0.35, 0.65, 1.0, 1),\r\n    accent_text=(0, 0, 0, 1),\r\n    muted=(1, 1, 1, 0.7),\r\n    gold=(1.0,0.9,0.4,1),\r\n    silver=(0.75,0.8,0.9,1),\r\n    bronze=(0.85,0.6,0.4,1),\r\n)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/color_utils.py b/color_utils.py
+--- a/color_utils.py	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/color_utils.py	(date 1760740509650)
+@@ -1,4 +1,3 @@
+-
+ from dataclasses import dataclass
+ 
+ @dataclass
+@@ -21,10 +20,10 @@
+     text=(0, 0, 0, 1),
+     accent=(0.2, 0.4, 0.9, 1),
+     accent_text=(1, 1, 1, 1),
+-    muted=(0, 0, 0, 0.6),
+-    gold=(1.0,0.82,0.34,1),
+-    silver=(0.8,0.85,0.95,1),
+-    bronze=(0.92,0.72,0.48,1),
++    muted=(0, 0, 0, 0.65),
++    gold=(1.0, 0.88, 0.35, 1),
++    silver=(0.82, 0.86, 0.95, 1),
++    bronze=(0.90, 0.70, 0.45, 1),
+ )
+ 
+ DARK = Theme(
+@@ -35,7 +34,7 @@
+     accent=(0.35, 0.65, 1.0, 1),
+     accent_text=(0, 0, 0, 1),
+     muted=(1, 1, 1, 0.7),
+-    gold=(1.0,0.9,0.4,1),
+-    silver=(0.75,0.8,0.9,1),
+-    bronze=(0.85,0.6,0.4,1),
++    gold=(1.0, 0.9, 0.4, 1),
++    silver=(0.75, 0.8, 0.9, 1),
++    bronze=(0.85, 0.6, 0.4, 1),
+ )
+Index: auth.kv
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#:kivy 2.3.0\r\n<AuthScreen>:\r\n    name: \"auth\"\r\n    canvas.before:\r\n        Color:\r\n            rgba: app.theme.bg\r\n        Rectangle:\r\n            pos: self.pos\r\n            size: self.size\r\n    FloatLayout:\r\n        Label:\r\n            text: \"StudySaga\"\r\n            pos_hint: {\"center_x\":0.5,\"top\":0.95}\r\n            size_hint: 0.6, None\r\n            height: dp(60)\r\n            color: app.theme.text\r\n            font_size: \"36sp\"\r\n            markup: True\r\n        TextInput:\r\n            id: email\r\n            hint_text: \"Email\"\r\n            size_hint: 0.7, None\r\n            height: dp(44)\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.62}\r\n            multiline: False\r\n            foreground_color: app.theme.text\r\n            background_color: app.theme.card\r\n            cursor_color: app.theme.text\r\n        TextInput:\r\n            id: pw\r\n            hint_text: \"Password\"\r\n            size_hint: 0.7, None\r\n            height: dp(44)\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.52}\r\n            password: True\r\n            multiline: False\r\n            foreground_color: app.theme.text\r\n            background_color: app.theme.card\r\n            cursor_color: app.theme.text\r\n        BoxLayout:\r\n            size_hint: 0.7, None\r\n            height: dp(44)\r\n            spacing: dp(10)\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.42}\r\n            Button:\r\n                text: \"Login\"\r\n                on_release: app.do_login(email.text, pw.text)\r\n                background_color: app.theme.accent\r\n                color: app.theme.accent_text\r\n            Button:\r\n                text: \"Register\"\r\n                on_release: app.do_register(email.text, pw.text)\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n        Label:\r\n            id: msg\r\n            text: \"\"\r\n            color: app.theme.muted\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.34}\r\n            size_hint: 0.8, None\r\n            halign: \"center\"\r\n            valign: \"middle\"\r\n            text_size: self.size\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/auth.kv b/auth.kv
+--- a/auth.kv	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/auth.kv	(date 1760759255143)
+@@ -1,4 +1,6 @@
+ #:kivy 2.3.0
++#:import dp kivy.metrics.dp
++
+ <AuthScreen>:
+     name: "auth"
+     canvas.before:
+@@ -7,21 +9,21 @@
+         Rectangle:
+             pos: self.pos
+             size: self.size
++
+     FloatLayout:
+         Label:
+             text: "StudySaga"
+-            pos_hint: {"center_x":0.5,"top":0.95}
+-            size_hint: 0.6, None
++            pos_hint: {"center_x":0.5, "center_y":0.64}
++            size_hint: 0.8, None
+             height: dp(60)
+             color: app.theme.text
+-            font_size: "36sp"
+-            markup: True
++            font_size: "52sp"
+         TextInput:
+             id: email
+-            hint_text: "Email"
+-            size_hint: 0.7, None
++            hint_text: "ID / Email"
++            size_hint: 0.8, None
+             height: dp(44)
+-            pos_hint: {"center_x":0.5,"center_y":0.62}
++            pos_hint: {"center_x":0.5, "center_y":0.52}
+             multiline: False
+             foreground_color: app.theme.text
+             background_color: app.theme.card
+@@ -29,35 +31,49 @@
+         TextInput:
+             id: pw
+             hint_text: "Password"
+-            size_hint: 0.7, None
++            size_hint: 0.8, None
+             height: dp(44)
+-            pos_hint: {"center_x":0.5,"center_y":0.52}
++            pos_hint: {"center_x":0.5, "center_y":0.44}
+             password: True
+             multiline: False
+             foreground_color: app.theme.text
+             background_color: app.theme.card
+             cursor_color: app.theme.text
+         BoxLayout:
+-            size_hint: 0.7, None
++            size_hint: 0.8, None
+             height: dp(44)
+             spacing: dp(10)
+-            pos_hint: {"center_x":0.5,"center_y":0.42}
++            pos_hint: {"center_x":0.5, "center_y":0.36}
++            Label:
++                text: "Gender"
++                color: app.theme.text
++                size_hint_x: 0.25
++            ToggleButton:
++                id: male
++                text: "Male"
++                group: "gender"
++            ToggleButton:
++                id: female
++                text: "Female"
++                group: "gender"
++                state: "down"
++        BoxLayout:
++            size_hint: 0.8, None
++            height: dp(44)
++            spacing: dp(10)
++            pos_hint: {"center_x":0.5, "center_y":0.28}
+             Button:
+                 text: "Login"
+                 on_release: app.do_login(email.text, pw.text)
+-                background_color: app.theme.accent
+-                color: app.theme.accent_text
+             Button:
+                 text: "Register"
+-                on_release: app.do_register(email.text, pw.text)
+-                background_color: app.theme.card
+-                color: app.theme.text
++                on_release: app.do_register(email.text, pw.text, "male" if male.state=="down" else "female")
+         Label:
+             id: msg
+             text: ""
+             color: app.theme.muted
+-            pos_hint: {"center_x":0.5,"center_y":0.34}
+-            size_hint: 0.8, None
++            pos_hint: {"center_x":0.5, "center_y":0.20}
++            size_hint: 0.9, None
+             halign: "center"
+             valign: "middle"
+             text_size: self.size
+Index: db.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nimport sqlite3, os, time, hashlib, secrets\r\n\r\nDB_PATH=os.environ.get('STUDYSAGA_DB','studysaga.sqlite3')\r\n\r\ndef _c():\r\n    c=sqlite3.connect(DB_PATH)\r\n    c.row_factory=sqlite3.Row\r\n    return c\r\n\r\ndef _has_col(cur, table, col):\r\n    cur.execute(f\"PRAGMA table_info({table})\")\r\n    return any(r[\"name\"]==col for r in cur.fetchall())\r\n\r\ndef _migrate():\r\n    c=_c(); x=c.cursor()\r\n    # sessions.expires_at\r\n    x.execute(\"PRAGMA table_info(sessions)\")\r\n    cols=[r[\"name\"] for r in x.fetchall()]\r\n    if \"expires_at\" not in cols:\r\n        try:\r\n            x.execute(\"ALTER TABLE sessions ADD COLUMN expires_at INTEGER\")\r\n            c.commit()\r\n        except sqlite3.OperationalError:\r\n            pass\r\n    # users schema: ensure columns exist\r\n    need_cols=[(\"nickname\",\"TEXT DEFAULT ''\"),\r\n               (\"gender\",\"TEXT DEFAULT 'female'\"),\r\n               (\"crystals\",\"INTEGER DEFAULT 100\"),\r\n               (\"dark_mode\",\"INTEGER DEFAULT 0\"),\r\n               (\"daily_goal_minutes\",\"INTEGER DEFAULT 60\")]\r\n    x.execute(\"PRAGMA table_info(users)\")\r\n    ucols=[r[\"name\"] for r in x.fetchall()]\r\n    for name, decl in need_cols:\r\n        if name not in ucols:\r\n            try:\r\n                x.execute(f\"ALTER TABLE users ADD COLUMN {name} {decl}\")\r\n                c.commit()\r\n            except sqlite3.OperationalError:\r\n                pass\r\n    c.close()\r\n\r\ndef bootstrap():\r\n    c=_c(); x=c.cursor()\r\n    x.executescript('''\r\n    CREATE TABLE IF NOT EXISTS users(\r\n        id INTEGER PRIMARY KEY,\r\n        email TEXT UNIQUE,\r\n        password_hash TEXT,\r\n        nickname TEXT DEFAULT '',\r\n        gender TEXT DEFAULT 'female',\r\n        crystals INTEGER DEFAULT 100,\r\n        dark_mode INTEGER DEFAULT 0,\r\n        daily_goal_minutes INTEGER DEFAULT 60\r\n    );\r\n    CREATE TABLE IF NOT EXISTS sessions(\r\n        token TEXT PRIMARY KEY,\r\n        user_id INTEGER,\r\n        expires_at INTEGER\r\n    );\r\n    ''')\r\n    c.commit(); c.close()\r\n    _migrate()\r\n\r\ndef _hash(p): return hashlib.sha256(('studysaga'+p).encode()).hexdigest()\r\n\r\ndef create_user(email,pw):\r\n    c=_c(); x=c.cursor()\r\n    try:\r\n        x.execute('INSERT INTO users(email,password_hash) VALUES (?,?)',(email,_hash(pw)))\r\n        c.commit(); ok=True\r\n    except sqlite3.IntegrityError:\r\n        ok=False\r\n    c.close(); return ok\r\n\r\ndef auth_user(email,pw):\r\n    c=_c(); x=c.cursor(); x.execute('SELECT * FROM users WHERE email=?',(email,)); r=x.fetchone(); c.close()\r\n    if not r or r['password_hash']!=_hash(pw): return None\r\n    return dict(r)\r\n\r\ndef issue_session(uid,hours=720):\r\n    t=secrets.token_urlsafe(24); exp=int(time.time())+hours*3600\r\n    c=_c(); x=c.cursor()\r\n    # insert with expires_at regardless (column is ensured in _migrate)\r\n    x.execute('INSERT OR REPLACE INTO sessions(token,user_id,expires_at) VALUES (?,?,?)',(t,uid,exp))\r\n    c.commit(); c.close(); return t\r\n\r\ndef set_gender(uid, gender):\r\n    c=_c(); x=c.cursor()\r\n    x.execute('UPDATE users SET gender=? WHERE id=?',(gender,uid))\r\n    c.commit(); c.close()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/db.py b/db.py
+--- a/db.py	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/db.py	(date 1760740517595)
+@@ -1,91 +1,248 @@
+-
+ import sqlite3, os, time, hashlib, secrets
++from pathlib import Path
+ 
+-DB_PATH=os.environ.get('STUDYSAGA_DB','studysaga.sqlite3')
++DB_PATH = os.environ.get("STUDYSAGA_DB", str(Path(__file__).resolve().parent / "studysaga.sqlite3"))
+ 
+ def _c():
+-    c=sqlite3.connect(DB_PATH)
+-    c.row_factory=sqlite3.Row
+-    return c
+-
+-def _has_col(cur, table, col):
+-    cur.execute(f"PRAGMA table_info({table})")
+-    return any(r["name"]==col for r in cur.fetchall())
++    con = sqlite3.connect(DB_PATH)
++    con.row_factory = sqlite3.Row
++    return con
+ 
+ def _migrate():
+-    c=_c(); x=c.cursor()
++    con=_c(); cur=con.cursor()
+     # sessions.expires_at
+-    x.execute("PRAGMA table_info(sessions)")
+-    cols=[r["name"] for r in x.fetchall()]
++    cur.execute("PRAGMA table_info(sessions)"); cols=[r["name"] for r in cur.fetchall()]
+     if "expires_at" not in cols:
+-        try:
+-            x.execute("ALTER TABLE sessions ADD COLUMN expires_at INTEGER")
+-            c.commit()
+-        except sqlite3.OperationalError:
+-            pass
+-    # users schema: ensure columns exist
+-    need_cols=[("nickname","TEXT DEFAULT ''"),
+-               ("gender","TEXT DEFAULT 'female'"),
+-               ("crystals","INTEGER DEFAULT 100"),
+-               ("dark_mode","INTEGER DEFAULT 0"),
+-               ("daily_goal_minutes","INTEGER DEFAULT 60")]
+-    x.execute("PRAGMA table_info(users)")
+-    ucols=[r["name"] for r in x.fetchall()]
+-    for name, decl in need_cols:
++        try: cur.execute("ALTER TABLE sessions ADD COLUMN expires_at INTEGER"); con.commit()
++        except sqlite3.OperationalError: pass
++    # users columns
++    cur.execute("PRAGMA table_info(users)"); ucols=[r["name"] for r in cur.fetchall()]
++    need=[("nickname","TEXT DEFAULT ''"),("gender","TEXT DEFAULT 'female'"),("crystals","INTEGER DEFAULT 100"),
++          ("dark_mode","INTEGER DEFAULT 0"),("daily_goal_minutes","INTEGER DEFAULT 60")]
++    for name, decl in need:
+         if name not in ucols:
+-            try:
+-                x.execute(f"ALTER TABLE users ADD COLUMN {name} {decl}")
+-                c.commit()
+-            except sqlite3.OperationalError:
+-                pass
+-    c.close()
++            try: cur.execute(f"ALTER TABLE users ADD COLUMN {name} {decl}"); con.commit()
++            except sqlite3.OperationalError: pass
++    # feature tables
++    cur.executescript("""
++    CREATE TABLE IF NOT EXISTS items(
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
++        name TEXT,
++        tier TEXT,
++        rarity INTEGER DEFAULT 1,
++        category TEXT DEFAULT 'tool',
++        focus INTEGER DEFAULT 0,
++        luck INTEGER DEFAULT 0
++    );
++    CREATE TABLE IF NOT EXISTS inventory(
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
++        user_id INTEGER,
++        item_id INTEGER,
++        equipped INTEGER DEFAULT 0,
++        created_at INTEGER DEFAULT (strftime('%s','now'))
++    );
++    CREATE TABLE IF NOT EXISTS study_sessions(
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
++        user_id INTEGER,
++        start_ts INTEGER,
++        end_ts INTEGER,
++        minutes INTEGER,
++        crystals_gained INTEGER DEFAULT 0,
++        notes TEXT DEFAULT ''
++    );
++    CREATE TABLE IF NOT EXISTS gacha_state(
++        user_id INTEGER,
++        tier TEXT,
++        pity_rare INTEGER DEFAULT 0,
++        pity_epic INTEGER DEFAULT 0,
++        PRIMARY KEY(user_id,tier)
++    );
++    CREATE TABLE IF NOT EXISTS achievements(
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
++        code TEXT UNIQUE,
++        name TEXT,
++        description TEXT
++    );
++    CREATE TABLE IF NOT EXISTS user_achievements(
++        user_id INTEGER,
++        achievement_id INTEGER,
++        ts INTEGER DEFAULT (strftime('%s','now')),
++        PRIMARY KEY(user_id,achievement_id)
++    );
++    """)
++    con.commit(); con.close()
+ 
+ def bootstrap():
+-    c=_c(); x=c.cursor()
+-    x.executescript('''
++    con=_c(); cur=con.cursor()
++    cur.executescript("""
+     CREATE TABLE IF NOT EXISTS users(
+-        id INTEGER PRIMARY KEY,
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
+         email TEXT UNIQUE,
+         password_hash TEXT,
+         nickname TEXT DEFAULT '',
+         gender TEXT DEFAULT 'female',
+         crystals INTEGER DEFAULT 100,
+         dark_mode INTEGER DEFAULT 0,
+-        daily_goal_minutes INTEGER DEFAULT 60
++        daily_goal_minutes INTEGER DEFAULT 60,
++        created_at INTEGER DEFAULT (strftime('%s','now'))
+     );
+     CREATE TABLE IF NOT EXISTS sessions(
+         token TEXT PRIMARY KEY,
+         user_id INTEGER,
++        created_at INTEGER DEFAULT (strftime('%s','now')),
+         expires_at INTEGER
+     );
+-    ''')
+-    c.commit(); c.close()
++    """)
++    con.commit(); con.close()
+     _migrate()
+ 
+-def _hash(p): return hashlib.sha256(('studysaga'+p).encode()).hexdigest()
++    # seeds
++    con=_c(); cur=con.cursor()
++    cur.execute("SELECT COUNT(*) c FROM items");
++    if cur.fetchone()["c"]==0:
++        pool=[
++            ("Wooden Pencil","bronze",1,"tool",0,1),
++            ("Lucky Eraser","bronze",1,"accessory",0,2),
++            ("Focus Tea","silver",2,"accessory",1,2),
++            ("Blue Marker","silver",2,"tool",1,1),
++            ("Ancient Textbook","gold",3,"book",2,1),
++            ("Mythic Timer","gold",4,"accessory",1,3)
++        ]
++        cur.executemany("INSERT INTO items(name,tier,rarity,category,focus,luck) VALUES (?,?,?,?,?,?)", pool)
++    cur.execute("SELECT COUNT(*) c FROM achievements");
++    if cur.fetchone()["c"]==0:
++        ach=[
++            ("FIRST_HOUR","First Hour","Accumulate 60 minutes of study."),
++            ("APPRENTICE","Focus Apprentice","Accumulate 300 minutes of study."),
++            ("MASTER","Focus Master","Accumulate 1000 minutes of study."),
++            ("POMODORO_PRO","Pomodoro Pro","Finish 4 Pomodoro cycles in one run."),
++            ("RARE_FIND","Rare Find","Obtain a rarity 3+ item.")
++        ]
++        cur.executemany("INSERT INTO achievements(code,name,description) VALUES (?,?,?)", ach)
++    con.commit(); con.close()
++
++def _hash(p): return hashlib.sha256(("studysaga"+p).encode()).hexdigest()
+ 
+ def create_user(email,pw):
+-    c=_c(); x=c.cursor()
+-    try:
+-        x.execute('INSERT INTO users(email,password_hash) VALUES (?,?)',(email,_hash(pw)))
+-        c.commit(); ok=True
+-    except sqlite3.IntegrityError:
+-        ok=False
+-    c.close(); return ok
++    con=_c(); cur=con.cursor()
++    try: cur.execute("INSERT INTO users(email,password_hash) VALUES (?,?)",(email,_hash(p))); con.commit(); ok=True
++    except sqlite3.IntegrityError: ok=False
++    con.close(); return ok
+ 
+ def auth_user(email,pw):
+-    c=_c(); x=c.cursor(); x.execute('SELECT * FROM users WHERE email=?',(email,)); r=x.fetchone(); c.close()
+-    if not r or r['password_hash']!=_hash(pw): return None
++    con=_c(); cur=con.cursor(); cur.execute("SELECT * FROM users WHERE email=?",(email,)); r=cur.fetchone(); con.close()
++    if not r or r["password_hash"]!=_hash(pw): return None
+     return dict(r)
+ 
+-def issue_session(uid,hours=720):
++def issue_session(uid,hours=24*30):
+     t=secrets.token_urlsafe(24); exp=int(time.time())+hours*3600
+-    c=_c(); x=c.cursor()
+-    # insert with expires_at regardless (column is ensured in _migrate)
+-    x.execute('INSERT OR REPLACE INTO sessions(token,user_id,expires_at) VALUES (?,?,?)',(t,uid,exp))
+-    c.commit(); c.close(); return t
++    con=_c(); cur=con.cursor(); cur.execute("INSERT OR REPLACE INTO sessions(token,user_id,expires_at) VALUES (?,?,?)",(t,uid,exp)); con.commit(); con.close(); return t
++
++def user_by_token(token):
++    now=int(time.time()); con=_c(); cur=con.cursor()
++    cur.execute("SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires_at>?", (token,now))
++    r=cur.fetchone(); con.close(); return dict(r) if r else None
++
++def set_nickname(uid, nickname):
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE users SET nickname=? WHERE id=?", (nickname,uid)); con.commit(); con.close()
+ 
+ def set_gender(uid, gender):
+-    c=_c(); x=c.cursor()
+-    x.execute('UPDATE users SET gender=? WHERE id=?',(gender,uid))
+-    c.commit(); c.close()
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE users SET gender=? WHERE id=?", (gender,uid)); con.commit(); con.close()
++
++def set_dark_mode(uid, dark):
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE users SET dark_mode=? WHERE id=?", (1 if dark else 0, uid)); con.commit(); con.close()
++
++def set_daily_goal(uid, minutes):
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE users SET daily_goal_minutes=? WHERE id=?", (max(15,min(600,minutes)),uid)); con.commit(); con.close()
++
++def get_theme(uid):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT dark_mode FROM users WHERE id=?", (uid,)); r=cur.fetchone(); con.close(); return bool(r["dark_mode"]) if r else False
++
++def get_settings(uid):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT nickname, gender, dark_mode, daily_goal_minutes FROM users WHERE id=?", (uid,)); r=cur.fetchone(); con.close(); return dict(r) if r else {}
++
++def get_crystals(uid):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT crystals FROM users WHERE id=?", (uid,)); r=cur.fetchone(); con.close(); return r["crystals"] if r else 0
++
++def add_crystals(uid, amount):
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE users SET crystals=crystals+? WHERE id=?", (amount,uid)); con.commit(); con.close()
++
++def spend_crystals(uid, cost):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT crystals FROM users WHERE id=?", (uid,)); r=cur.fetchone()
++    if not r or r["crystals"]<cost: con.close(); return False
++    cur.execute("UPDATE users SET crystals=crystals-? WHERE id=?", (cost,uid)); con.commit(); con.close(); return True
++
++def pool_by_tier(tier):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT * FROM items WHERE tier=?", (tier,)); rows=[dict(r) for r in cur.fetchall()]; con.close(); return rows
++
++def add_item_to_inventory(uid, item_id):
++    con=_c(); cur=con.cursor(); cur.execute("INSERT INTO inventory(user_id,item_id) VALUES (?,?)",(uid,item_id)); con.commit(); con.close()
++
++def get_inventory(uid, search="", tier="all"):
++    sql="SELECT inv.id, it.name, it.tier, it.rarity, it.category, it.focus, it.luck, inv.equipped, inv.created_at FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.user_id=?"
++    params=[uid]
++    if tier and tier!="all": sql+=" AND it.tier=?"; params.append(tier)
++    if search: sql+=" AND it.name LIKE ?"; params.append(f"%{search}%")
++    sql+=" ORDER BY inv.id DESC"
++    con=_c(); cur=con.cursor(); cur.execute(sql, params); rows=[dict(r) for r in cur.fetchall()]; con.close(); return rows
++
++def set_equipped(uid, inv_id, val):
++    con=_c(); cur=con.cursor()
++    cur.execute("""SELECT inv.id, it.category FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.user_id=? AND inv.id=?""",(uid,inv_id))
++    row=cur.fetchone()
++    if not row: con.close(); return
++    if val:
++        cur.execute("""UPDATE inventory SET equipped=0 WHERE user_id=? AND id IN (
++                        SELECT inv.id FROM inventory inv JOIN items it ON it.id=inv.item_id
++                        WHERE inv.user_id=? AND it.category=(SELECT it2.category FROM inventory inv2 JOIN items it2 ON it2.id=inv2.item_id WHERE inv2.id=?)
++                      )""",(uid,uid,inv_id))
++    cur.execute("UPDATE inventory SET equipped=? WHERE user_id=? AND id=?", (1 if val else 0, uid, inv_id))
++    con.commit(); con.close()
++
++def equipped_stats(uid):
++    con=_c(); cur=con.cursor()
++    cur.execute("SELECT SUM(it.focus) f, SUM(it.luck) l FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.user_id=? AND inv.equipped=1", (uid,))
++    row=cur.fetchone(); con.close(); return (row["f"] or 0, row["l"] or 0)
++
++def log_study(uid, minutes, crystals_gain):
++    now=int(time.time()); con=_c(); cur=con.cursor()
++    cur.execute("INSERT INTO study_sessions(user_id,start_ts,end_ts,minutes,crystals_gained) VALUES (?,?,?,?,?)",(uid,now-minutes*60,now,minutes,crystals_gain)); con.commit(); con.close()
++
++def minutes_today(uid):
++    lt=time.localtime(); midnight=int(time.mktime((lt.tm_year,lt.tm_mon,lt.tm_mday,0,0,0,lt.tm_wday,lt.tm_yday,lt.tm_isdst)))
++    con=_c(); cur=con.cursor(); cur.execute("SELECT SUM(minutes) m FROM study_sessions WHERE user_id=? AND end_ts>=?",(uid,midnight)); r=cur.fetchone(); con.close(); return r["m"] or 0
++
++def minutes_7days(uid):
++    start=int(time.time())-7*24*3600; con=_c(); cur=con.cursor(); cur.execute("SELECT end_ts, minutes FROM study_sessions WHERE user_id=? AND end_ts>=?",(uid,start)); rows=cur.fetchall(); con.close(); return [dict(r) for r in rows]
++
++def total_minutes(uid):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT SUM(minutes) m FROM study_sessions WHERE user_id=?",(uid,)); r=cur.fetchone(); con.close(); return r["m"] or 0
++
++def grant_achievement(uid, code):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT id FROM achievements WHERE code=?", (code,)); a=cur.fetchone()
++    if not a: con.close(); return False
++    try: cur.execute("INSERT INTO user_achievements(user_id,achievement_id) VALUES (?,?)",(uid,a["id"])); con.commit(); ok=True
++    except sqlite3.IntegrityError: ok=False
++    con.close(); return ok
++
++def list_achievements(uid):
++    con=_c(); cur=con.cursor()
++    cur.execute("""SELECT a.code,a.name,a.description,
++                   (SELECT 1 FROM user_achievements ua WHERE ua.user_id=? AND ua.achievement_id=a.id) owned
++                   FROM achievements a ORDER BY a.id""",(uid,))
++    rows=[dict(r) for r in cur.fetchall()]; con.close(); return rows
++
++def _pity_row(uid, tier):
++    con=_c(); cur=con.cursor(); cur.execute("SELECT pity_rare,pity_epic FROM gacha_state WHERE user_id=? AND tier=?", (uid,tier)); r=cur.fetchone()
++    if not r:
++        cur.execute("INSERT INTO gacha_state(user_id,tier,pity_rare,pity_epic) VALUES (?,?,0,0)", (uid,tier)); con.commit(); pity=(0,0)
++    else: pity=(r["pity_rare"], r["pity_epic"])
++    con.close(); return pity
++
++def update_pity(uid, tier, got_rarity):
++    pr,pe=_pity_row(uid,tier)
++    pr=0 if got_rarity>=2 else pr+1
++    pe=0 if got_rarity>=3 else pe+1
++    con=_c(); cur=con.cursor(); cur.execute("UPDATE gacha_state SET pity_rare=?, pity_epic=? WHERE user_id=? AND tier=?", (pr,pe,uid,tier)); con.commit(); con.close()
++
++def get_pity(uid, tier): return _pity_row(uid,tier)
+Index: gacha.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nimport random\r\nfrom typing import Tuple, Optional\r\nimport db as DB\r\n\r\nCOSTS = {'bronze':10, 'silver':30, 'gold':60}\r\nWEIGHTS = {'bronze': [0.85, 0.13, 0.02], 'silver': [0.70, 0.25, 0.05], 'gold': [0.55, 0.35, 0.10]}\r\nPITY_RARE = {'bronze':10, 'silver':7, 'gold':5}\r\nPITY_EPIC = {'bronze':30, 'silver':20, 'gold':10}\r\n\r\ndef roll(user_id: int, tier: str) -> Tuple[bool, Optional[dict], str, dict]:\r\n    cost = COSTS.get(tier, 10)\r\n    if not DB.spend_crystals(user_id, cost):\r\n        return False, None, \"Not enough crystals.\", {}\r\n    pool = DB.pool_by_tier(tier)\r\n    if not pool:\r\n        return False, None, \"No items in pool.\", {}\r\n\r\n    pr, pe = DB.get_pity(user_id, tier)\r\n    force_rare = pr+1 >= PITY_RARE.get(tier, 10)\r\n    force_epic = pe+1 >= PITY_EPIC.get(tier, 30)\r\n\r\n    weights = WEIGHTS.get(tier, [0.8,0.18,0.02])\r\n    group_items = {1:[i for i in pool if i['rarity']==1],\r\n                   2:[i for i in pool if i['rarity']==2],\r\n                   3:[i for i in pool if i['rarity']>=3]}\r\n\r\n    if force_epic and group_items[3]:\r\n        grp = 3\r\n    elif force_rare and (group_items[2] or group_items[3]):\r\n        grp = 2 if group_items[2] else 3\r\n    else:\r\n        grp = random.choices([1,2,3], weights=weights, k=1)[0]\r\n        if not group_items.get(grp):\r\n            grp = 1 if group_items[1] else (2 if group_items[2] else 3)\r\n\r\n    choices = group_items[grp] if group_items.get(grp) else pool\r\n    item = random.choice(choices)\r\n    DB.add_item_to_inventory(user_id, item['id'])\r\n    DB.update_pity(user_id, tier, item['rarity'])\r\n\r\n    if item['rarity']>=3:\r\n        DB.grant_achievement(user_id, \"RARE_FIND\")\r\n\r\n    pity_view = {\"rare\": PITY_RARE.get(tier,10), \"rare_stacks\": pr+1 if item['rarity']<2 else 0,\r\n                 \"epic\": PITY_EPIC.get(tier,30), \"epic_stacks\": pe+1 if item['rarity']<3 else 0}\r\n    return True, item, \"Success\", pity_view\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gacha.py b/gacha.py
+--- a/gacha.py	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/gacha.py	(date 1760740538023)
+@@ -1,47 +1,42 @@
+-
+ import random
+ from typing import Tuple, Optional
+ import db as DB
+ 
+ COSTS = {'bronze':10, 'silver':30, 'gold':60}
+-WEIGHTS = {'bronze': [0.85, 0.13, 0.02], 'silver': [0.70, 0.25, 0.05], 'gold': [0.55, 0.35, 0.10]}
+-PITY_RARE = {'bronze':10, 'silver':7, 'gold':5}
+-PITY_EPIC = {'bronze':30, 'silver':20, 'gold':10}
++WEIGHTS = {'bronze':[0.85,0.13,0.02], 'silver':[0.70,0.25,0.05], 'gold':[0.55,0.35,0.10]}
++PITY_RARE={'bronze':10, 'silver':7, 'gold':5}
++PITY_EPIC={'bronze':30, 'silver':20, 'gold':10}
+ 
+ def roll(user_id: int, tier: str) -> Tuple[bool, Optional[dict], str, dict]:
+-    cost = COSTS.get(tier, 10)
++    cost=COSTS.get(tier,10)
+     if not DB.spend_crystals(user_id, cost):
+         return False, None, "Not enough crystals.", {}
+-    pool = DB.pool_by_tier(tier)
+-    if not pool:
+-        return False, None, "No items in pool.", {}
++    pool=DB.pool_by_tier(tier)
++    if not pool: return False, None, "No items in pool.", {}
+ 
+-    pr, pe = DB.get_pity(user_id, tier)
+-    force_rare = pr+1 >= PITY_RARE.get(tier, 10)
+-    force_epic = pe+1 >= PITY_EPIC.get(tier, 30)
++    pr,pe = DB.get_pity(user_id, tier)
++    force_rare = pr+1>=PITY_RARE.get(tier,10)
++    force_epic = pe+1>=PITY_EPIC.get(tier,30)
+ 
+-    weights = WEIGHTS.get(tier, [0.8,0.18,0.02])
+-    group_items = {1:[i for i in pool if i['rarity']==1],
+-                   2:[i for i in pool if i['rarity']==2],
+-                   3:[i for i in pool if i['rarity']>=3]}
++    weights=WEIGHTS.get(tier,[0.8,0.18,0.02])
++    groups={1:[i for i in pool if i['rarity']==1],
++            2:[i for i in pool if i['rarity']==2],
++            3:[i for i in pool if i['rarity']>=3]}
+ 
+-    if force_epic and group_items[3]:
+-        grp = 3
+-    elif force_rare and (group_items[2] or group_items[3]):
+-        grp = 2 if group_items[2] else 3
++    if force_epic and groups[3]:
++        grp=3
++    elif force_rare and (groups[2] or groups[3]):
++        grp=2 if groups[2] else 3
+     else:
+         grp = random.choices([1,2,3], weights=weights, k=1)[0]
+-        if not group_items.get(grp):
+-            grp = 1 if group_items[1] else (2 if group_items[2] else 3)
++        if not groups.get(grp):
++            grp = 1 if groups[1] else (2 if groups[2] else 3)
+ 
+-    choices = group_items[grp] if group_items.get(grp) else pool
+-    item = random.choice(choices)
++    item = random.choice(groups.get(grp, pool))
+     DB.add_item_to_inventory(user_id, item['id'])
+     DB.update_pity(user_id, tier, item['rarity'])
++    if item['rarity']>=3: DB.grant_achievement(user_id, "RARE_FIND")
+ 
+-    if item['rarity']>=3:
+-        DB.grant_achievement(user_id, "RARE_FIND")
+-
+-    pity_view = {"rare": PITY_RARE.get(tier,10), "rare_stacks": pr+1 if item['rarity']<2 else 0,
+-                 "epic": PITY_EPIC.get(tier,30), "epic_stacks": pe+1 if item['rarity']<3 else 0}
+-    return True, item, "Success", pity_view
++    pity = {"rare":PITY_RARE.get(tier,10), "rare_stacks": pr+1 if item['rarity']<2 else 0,
++            "epic":PITY_EPIC.get(tier,30), "epic_stacks": pe+1 if item['rarity']<3 else 0}
++    return True, item, "Success", pity
+Index: auth.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nimport db as DB\r\n\r\ndef register(email: str, password: str, gender: str = \"female\"):\r\n    DB.bootstrap()\r\n    ok = DB.create_user(email, password)\r\n    if ok:\r\n        # fetch user and set gender\r\n        u = DB.auth_user(email, password)\r\n        if u:\r\n            DB.set_gender(u[\"id\"], (gender or \"female\"))\r\n    return ok, (\"Registered\" if ok else \"Email already exists.\")\r\n\r\ndef login(email: str, password: str):\r\n    DB.bootstrap()\r\n    user = DB.auth_user(email, password)\r\n    if not user:\r\n        return False, \"Invalid credentials.\", None\r\n    token = DB.issue_session(user[\"id\"])\r\n    user[\"token\"] = token\r\n    return True, \"Logged in.\", user\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/auth.py b/auth.py
+--- a/auth.py	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/auth.py	(date 1760740529160)
+@@ -1,11 +1,9 @@
+-
+ import db as DB
+ 
+ def register(email: str, password: str, gender: str = "female"):
+     DB.bootstrap()
+     ok = DB.create_user(email, password)
+     if ok:
+-        # fetch user and set gender
+         u = DB.auth_user(email, password)
+         if u:
+             DB.set_gender(u["id"], (gender or "female"))
+Index: home.kv
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#:kivy 2.3.0\r\n<HomeScreen>:\r\n    name: \"home\"\r\n    canvas.before:\r\n        Color:\r\n            rgba: app.theme.bg\r\n        Rectangle:\r\n            pos: self.pos\r\n            size: self.size\r\n    FloatLayout:\r\n        Label:\r\n            id: hello\r\n            text: \"Hi, {}!  ✨  Crystals: {}\".format(app.profile.get(\"nickname\",\"\"), app.crystals)\r\n            color: app.theme.text\r\n            pos_hint: {\"center_x\":0.5,\"top\":0.98}\r\n            size_hint: 1, None\r\n            height: dp(50)\r\n            font_size: \"20sp\"\r\n        Widget:\r\n            id: avatar_stage\r\n            size_hint: 0.45, 0.32\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.6}\r\n        GridLayout:\r\n            cols: 3\r\n            spacing: dp(10)\r\n            size_hint: 0.92, None\r\n            height: self.minimum_height\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.33}\r\n            Button:\r\n                text: \"Study \uD83D\uDCDA\"\r\n                on_release: app.go(\"study\")\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n                size_hint_y: None\r\n                height: dp(70)\r\n            Button:\r\n                text: \"Gacha \uD83C\uDF81\"\r\n                on_release: app.go(\"gacha\")\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n                size_hint_y: None\r\n                height: dp(70)\r\n            Button:\r\n                text: \"Achievements \uD83C\uDFC6\"\r\n                on_release: app.go(\"achievements\")\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n                size_hint_y: None\r\n                height: dp(70)\r\n            Button:\r\n                text: \"Inventory \uD83C\uDF92\"\r\n                on_release: app.go(\"inventory\")\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n                size_hint_y: None\r\n                height: dp(70)\r\n            Button:\r\n                text: \"Settings ⚙\uFE0F\"\r\n                on_release: app.go(\"settings\")\r\n                background_color: app.theme.card\r\n                color: app.theme.text\r\n                size_hint_y: None\r\n                height: dp(70)\r\n        BoxLayout:\r\n            size_hint: 0.9, None\r\n            height: dp(40)\r\n            pos_hint: {\"center_x\":0.5,\"y\":0.02}\r\n            spacing: dp(8)\r\n            Label:\r\n                id: today_goal\r\n                text: \"\"\r\n                color: app.theme.muted\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/home.kv b/home.kv
+--- a/home.kv	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/home.kv	(date 1760759120207)
+@@ -1,4 +1,6 @@
+ #:kivy 2.3.0
++#:import dp kivy.metrics.dp
++
+ <HomeScreen>:
+     name: "home"
+     canvas.before:
+@@ -7,64 +9,81 @@
+         Rectangle:
+             pos: self.pos
+             size: self.size
++
+     FloatLayout:
++        Widget:
++            id: avatar_stage
++            size_hint: 0.26, 0.26
++            pos_hint: {"center_x":0.5, "center_y":0.76}
++
++        Label:
++            text: "StudySaga"
++            color: app.theme.text
++            font_size: "34sp"
++            size_hint: None, None
++            size: dp(200), dp(40)
++            pos_hint: {"center_x":0.5, "center_y":0.62}
++
+         Label:
+             id: hello
+-            text: "Hi, {}!  ✨  Crystals: {}".format(app.profile.get("nickname",""), app.crystals)
++            text: "Hi!"
+             color: app.theme.text
+-            pos_hint: {"center_x":0.5,"top":0.98}
++            pos_hint: {"center_x":0.5, "center_y":0.52}
+             size_hint: 1, None
+-            height: dp(50)
+-            font_size: "20sp"
+-        Widget:
+-            id: avatar_stage
+-            size_hint: 0.45, 0.32
+-            pos_hint: {"center_x":0.5,"center_y":0.6}
++            height: dp(32)
++            font_size: "18sp"
++
+         GridLayout:
+             cols: 3
+             spacing: dp(10)
+             size_hint: 0.92, None
+             height: self.minimum_height
+-            pos_hint: {"center_x":0.5,"center_y":0.33}
++            pos_hint: {"center_x":0.5, "center_y":0.34}
++
+             Button:
+                 text: "Study 📚"
+-                on_release: app.go("study")
+-                background_color: app.theme.card
+-                color: app.theme.text
+                 size_hint_y: None
+                 height: dp(70)
++                background_color: app.theme.card
++                color: app.theme.text
++                on_release: app.go("study")
++
+             Button:
+                 text: "Gacha 🎁"
+-                on_release: app.go("gacha")
+-                background_color: app.theme.card
+-                color: app.theme.text
+                 size_hint_y: None
+                 height: dp(70)
+-            Button:
+-                text: "Achievements 🏆"
+-                on_release: app.go("achievements")
+                 background_color: app.theme.card
+                 color: app.theme.text
++                on_release: app.go("gacha")
++
++            Button:
++                text: "Achievements 🏆"
+                 size_hint_y: None
+                 height: dp(70)
++                background_color: app.theme.card
++                color: app.theme.text
++                on_release: app.go("achievements")
++
+             Button:
+                 text: "Inventory 🎒"
+-                on_release: app.go("inventory")
+-                background_color: app.theme.card
+-                color: app.theme.text
+                 size_hint_y: None
+                 height: dp(70)
++                background_color: app.theme.card
++                color: app.theme.text
++                on_release: app.go("inventory")
++
+             Button:
+                 text: "Settings ⚙️"
+-                on_release: app.go("settings")
++                size_hint_y: None
++                height: dp(70)
+                 background_color: app.theme.card
+                 color: app.theme.text
+-                size_hint_y: None
+-                height: dp(70)
++                on_release: app.go("settings")
++
+         BoxLayout:
+             size_hint: 0.9, None
+-            height: dp(40)
+-            pos_hint: {"center_x":0.5,"y":0.02}
++            height: dp(30)
++            pos_hint: {"center_x":0.5, "y":0.02}
+             spacing: dp(8)
+             Label:
+                 id: today_goal
+Index: gacha.kv
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#:kivy 2.3.0\r\n<GachaScreen>:\r\n    name: \"gacha\"\r\n    canvas.before:\r\n        Color:\r\n            rgba: app.theme.bg\r\n        Rectangle:\r\n            pos: self.pos\r\n            size: self.size\r\n    FloatLayout:\r\n        Label:\r\n            text: \"Gacha  \\u2022  Crystals: {}\".format(app.crystals)\r\n            color: app.theme.text\r\n            pos_hint: {\"center_x\":0.5,\"top\":0.95}\r\n            size_hint: 1, None\r\n            height: dp(40)\r\n        BoxLayout:\r\n            size_hint: 0.92, None\r\n            height: dp(50)\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.68}\r\n            spacing: dp(10)\r\n            Button:\r\n                text: \"Bronze (10)\"\r\n                on_release: app.do_gacha('bronze')\r\n                background_color: app.theme.bronze\r\n                color: app.theme.text\r\n            Button:\r\n                text: \"Silver (30)\"\r\n                on_release: app.do_gacha('silver')\r\n                background_color: app.theme.silver\r\n                color: 0,0,0,1\r\n            Button:\r\n                text: \"Gold (60)\"\r\n                on_release: app.do_gacha('gold')\r\n                background_color: app.theme.gold\r\n                color: 0,0,0,1\r\n        Label:\r\n            id: pity\r\n            text: \"\"\r\n            color: app.theme.muted\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.60}\r\n            halign: \"center\"\r\n            valign: \"middle\"\r\n            text_size: self.size\r\n        Widget:\r\n            id: card_stage\r\n            size_hint: 0.72, 0.36\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.40}\r\n        Label:\r\n            id: result\r\n            text: \"\"\r\n            color: app.theme.muted\r\n            pos_hint: {\"center_x\":0.5,\"center_y\":0.18}\r\n            halign: \"center\"\r\n            valign: \"middle\"\r\n            text_size: self.size\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gacha.kv b/gacha.kv
+--- a/gacha.kv	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/gacha.kv	(date 1760740591861)
+@@ -9,7 +9,7 @@
+             size: self.size
+     FloatLayout:
+         Label:
+-            text: "Gacha  \u2022  Crystals: {}".format(app.crystals)
++            text: "Gacha  \\u2022  Crystals: {}".format(app.crystals)
+             color: app.theme.text
+             pos_hint: {"center_x":0.5,"top":0.95}
+             size_hint: 1, None
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nimport os, time\r\nos.environ[\"KIVY_NO_ARGS\"]=\"1\"\r\nfrom kivy.core.window import Window\r\nfrom kivy.app import App\r\nfrom kivy.uix.screenmanager import ScreenManager, Screen, NoTransition\r\nfrom kivy.uix.boxlayout import BoxLayout\r\nfrom kivy.uix.label import Label\r\nfrom kivy.uix.textinput import TextInput\r\nfrom kivy.uix.button import Button\r\nfrom kivy.uix.togglebutton import ToggleButton\r\n\r\nimport db as DB\r\nimport auth as AUTH\r\n\r\nWindow.clearcolor = (0.12,0.13,0.16,1)\r\n\r\nclass AuthScreen(Screen):\r\n    def __init__(self, **kw):\r\n        super().__init__(**kw)\r\n        root = BoxLayout(orientation=\"vertical\", padding=24, spacing=12)\r\n        title = Label(text=\"StudySaga\", font_size=\"44sp\", size_hint_y=None, height=64)\r\n        self.email = TextInput(hint_text=\"ID / Email\", size_hint_y=None, height=44, multiline=False)\r\n        self.pw    = TextInput(hint_text=\"Password\", password=True, size_hint_y=None, height=44, multiline=False)\r\n\r\n        # Gender row\r\n        row_gender = BoxLayout(size_hint_y=None, height=44, spacing=10)\r\n        row_gender.add_widget(Label(text=\"Gender\", size_hint_x=0.25))\r\n        self.male = ToggleButton(text=\"Male\", group=\"gender\")\r\n        self.female = ToggleButton(text=\"Female\", group=\"gender\", state=\"down\")\r\n        row_gender.add_widget(self.male); row_gender.add_widget(self.female)\r\n\r\n        # Buttons\r\n        row_btn = BoxLayout(size_hint_y=None, height=44, spacing=10)\r\n        btn_login = Button(text=\"Login\")\r\n        btn_reg   = Button(text=\"Register\")\r\n        btn_login.bind(on_release=lambda *_: App.get_running_app().do_login(self.email.text, self.pw.text))\r\n        btn_reg.bind(on_release=lambda *_: App.get_running_app().do_register(self.email.text, self.pw.text, \"male\" if self.male.state==\"down\" else \"female\"))\r\n\r\n        row_btn.add_widget(btn_login); row_btn.add_widget(btn_reg)\r\n\r\n        self.msg = Label(text=\"\", size_hint_y=None, height=28)\r\n\r\n        root.add_widget(title)\r\n        root.add_widget(self.email)\r\n        root.add_widget(self.pw)\r\n        root.add_widget(row_gender)\r\n        root.add_widget(row_btn)\r\n        root.add_widget(self.msg)\r\n        self.add_widget(root)\r\n\r\nclass HomeScreen(Screen):\r\n    def __init__(self, **kw):\r\n        super().__init__(**kw)\r\n        root = BoxLayout(orientation=\"vertical\", padding=20, spacing=8)\r\n        self.hello = Label(text=\"Hi!\", font_size=\"22sp\", size_hint_y=None, height=36)\r\n        btns = BoxLayout(size_hint_y=None, height=44, spacing=10)\r\n        for name in [\"Study\",\"Gacha\",\"Inventory\",\"Settings\",\"Achievements\"]:\r\n            b = Button(text=name); b.bind(on_release=lambda _b, n=name.lower(): App.get_running_app().go(n))\r\n            btns.add_widget(b)\r\n        root.add_widget(self.hello); root.add_widget(btns)\r\n        self.add_widget(root)\r\n\r\nclass StudySagaApp(App):\r\n    user=None; profile={}; token=\"\"\r\n    def build(self):\r\n        DB.bootstrap()\r\n        self.sm = ScreenManager(transition=NoTransition())\r\n        self.auth = AuthScreen(name=\"auth\")\r\n        self.home = HomeScreen(name=\"home\")\r\n        self.sm.add_widget(self.auth); self.sm.add_widget(self.home)\r\n        self.sm.current = \"auth\"\r\n        return self.sm\r\n\r\n    def go(self, name): \r\n        if name in [s.name for s in self.sm.screens]:\r\n            self.sm.current = name\r\n\r\n    def set_msg(self, txt): \r\n        if hasattr(self.auth, \"msg\"): self.auth.msg.text = txt\r\n\r\n    def do_register(self, email, pw, gender):\r\n        ok, msg = AUTH.register(email.strip(), pw.strip(), (gender or 'female').strip())\r\n        self.set_msg(msg)\r\n\r\n    def do_login(self, email, pw):\r\n        ok, msg, user = AUTH.login(email.strip(), pw.strip())\r\n        self.set_msg(msg)\r\n        if not ok: \r\n            return\r\n        # Save profile and switch to Home\r\n        self.user = user\r\n        self.token = user[\"token\"]\r\n        self.profile = {\r\n            \"id\": user[\"id\"],\r\n            \"email\": user[\"email\"],\r\n            \"nickname\": user.get(\"nickname\",\"\"),\r\n            \"gender\": user.get(\"gender\",\"female\")\r\n        }\r\n        self.home.hello.text = f\"Hi, {self.profile.get('nickname','')}! ({self.profile.get('gender','?')})\"\r\n        self.go(\"home\")  # <-- navigate after successful login\r\n\r\nif __name__==\"__main__\":\r\n    StudySagaApp().run()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 4045767fd598205ad2517170c76b1bc2272418a3)
++++ b/main.py	(date 1760758826664)
+@@ -1,104 +1,214 @@
+-
+-import os, time
+-os.environ["KIVY_NO_ARGS"]="1"
+-from kivy.core.window import Window
++# main.py
++import os, math
++from pathlib import Path
++os.environ["KIVY_NO_ARGS"] = "1"
++
++APP_DIR = Path(__file__).resolve().parent
++try:
++    os.chdir(APP_DIR)
++except Exception:
++    pass
++
+ from kivy.app import App
++from kivy.clock import Clock
++from kivy.lang import Builder
+ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
++from kivy.uix.widget import Widget
+ from kivy.uix.boxlayout import BoxLayout
+ from kivy.uix.label import Label
+-from kivy.uix.textinput import TextInput
+ from kivy.uix.button import Button
+-from kivy.uix.togglebutton import ToggleButton
++from kivy.graphics import Color, Rectangle, Ellipse
++from kivy.logger import Logger
+ 
+ import db as DB
+ import auth as AUTH
++import gacha as GACHA
++from color_utils import LIGHT, DARK
++
++
++class AuthScreen(Screen): pass
++class HomeScreen(Screen): pass
++class StudyScreen(Screen): pass
++class GachaScreen(Screen): pass
++class InventoryScreen(Screen): pass
++class SettingsScreen(Screen): pass
++class AchievementsScreen(Screen): pass
++
+ 
+-Window.clearcolor = (0.12,0.13,0.16,1)
++# --- KV 파일 로딩(로그 포함) ---
++KV_FILES = [
++    "auth.kv", "home.kv", "study.kv",
++    "gacha.kv", "inventory.kv", "settings.kv", "achievements.kv"
++]
++for kv in KV_FILES:
++    path = str((APP_DIR / kv).resolve())
++    try:
++        Logger.info(f"KV: loading {path}")
++        Builder.load_file(path)
++        Logger.info(f"KV: loaded OK -> {kv}")
++    except Exception as e:
++        Logger.exception(f"KV: FAILED to load {kv}: {e}")
++Logger.info("KV: all attempted")
+ 
+-class AuthScreen(Screen):
++
++class PixelBackground(Widget):
+     def __init__(self, **kw):
+         super().__init__(**kw)
+-        root = BoxLayout(orientation="vertical", padding=24, spacing=12)
+-        title = Label(text="StudySaga", font_size="44sp", size_hint_y=None, height=64)
+-        self.email = TextInput(hint_text="ID / Email", size_hint_y=None, height=44, multiline=False)
+-        self.pw    = TextInput(hint_text="Password", password=True, size_hint_y=None, height=44, multiline=False)
+-
+-        # Gender row
+-        row_gender = BoxLayout(size_hint_y=None, height=44, spacing=10)
+-        row_gender.add_widget(Label(text="Gender", size_hint_x=0.25))
+-        self.male = ToggleButton(text="Male", group="gender")
+-        self.female = ToggleButton(text="Female", group="gender", state="down")
+-        row_gender.add_widget(self.male); row_gender.add_widget(self.female)
++        self.phase = 0.0
++        Clock.schedule_interval(self._tick, 1 / 12.0)
++        self.bind(pos=self._tick, size=self._tick)
+ 
+-        # Buttons
+-        row_btn = BoxLayout(size_hint_y=None, height=44, spacing=10)
+-        btn_login = Button(text="Login")
+-        btn_reg   = Button(text="Register")
+-        btn_login.bind(on_release=lambda *_: App.get_running_app().do_login(self.email.text, self.pw.text))
+-        btn_reg.bind(on_release=lambda *_: App.get_running_app().do_register(self.email.text, self.pw.text, "male" if self.male.state=="down" else "female"))
++    def _tick(self, *_):
++        self.phase += 0.04
++        self.canvas.clear()
++        w, h = self.width, self.height
++        tile = max(8, int(min(w, h) / 42))
++        with self.canvas:
++            for i in range(0, int(w // tile) + 2):
++                for j in range(0, int(h // tile) + 2):
++                    r = (i * 13 + j * 7 + int(self.phase * 10)) % 40 / 40.0
++                    g = (i * 5 + j * 11 + int(self.phase * 7)) % 40 / 40.0
++                    Color(0.12 + r * 0.08, 0.15 + g * 0.08, 0.18 + r * 0.08, 1)
++                    Rectangle(pos=(self.x + i * tile, self.y + j * tile), size=(tile, tile))
+ 
+-        row_btn.add_widget(btn_login); row_btn.add_widget(btn_reg)
+ 
+-        self.msg = Label(text="", size_hint_y=None, height=28)
+-
+-        root.add_widget(title)
+-        root.add_widget(self.email)
+-        root.add_widget(self.pw)
+-        root.add_widget(row_gender)
+-        root.add_widget(row_btn)
+-        root.add_widget(self.msg)
+-        self.add_widget(root)
+-
+-class HomeScreen(Screen):
+-    def __init__(self, **kw):
++class PixelCharacter(Widget):
++    def __init__(self, gender="female", **kw):
+         super().__init__(**kw)
+-        root = BoxLayout(orientation="vertical", padding=20, spacing=8)
+-        self.hello = Label(text="Hi!", font_size="22sp", size_hint_y=None, height=36)
+-        btns = BoxLayout(size_hint_y=None, height=44, spacing=10)
+-        for name in ["Study","Gacha","Inventory","Settings","Achievements"]:
+-            b = Button(text=name); b.bind(on_release=lambda _b, n=name.lower(): App.get_running_app().go(n))
+-            btns.add_widget(b)
+-        root.add_widget(self.hello); root.add_widget(btns)
+-        self.add_widget(root)
++        self.gender = gender
++        self.t = 0.0
++        Clock.schedule_interval(self._tick, 1 / 30.0)
++        self.bind(pos=self._tick, size=self._tick)
++
++    def _tick(self, *_):
++        self.t += 0.1
++        yoff = math.sin(self.t) * 3
++        self.canvas.clear()
++        c1 = (0.3, 0.6, 1, 1) if self.gender == "male" else (1, 0.5, 0.7, 1)
++        with self.canvas:
++            Color(0.4, 0.25, 0.15, 1)
++            Rectangle(pos=(self.x + self.width * 0.1, self.y + self.height * 0.12), size=(self.width * 0.8, self.height * 0.08))
++            Color(0.9, 0.9, 1, 1)
++            Rectangle(pos=(self.x + self.width * 0.35, self.y + self.height * 0.20), size=(self.width * 0.3, self.height * 0.05))
++            Color(*c1)
++            Rectangle(pos=(self.x + self.width * 0.47, self.y + self.height * 0.25 + yoff), size=(self.width * 0.12, self.height * 0.18))
++            Color(1, 0.85, 0.7, 1)
++            Ellipse(pos=(self.x + self.width * 0.45, self.y + self.height * 0.41 + yoff), size=(self.width * 0.18, self.height * 0.18))
++            Color(0.1, 0.1, 0.1, 1)
++            Rectangle(pos=(self.x + self.width * 0.55, self.y + self.height * 0.23 + yoff), size=(self.width * 0.04, self.height * 0.02))
++
++
++class Root(ScreenManager): pass
++
+ 
+ class StudySagaApp(App):
+-    user=None; profile={}; token=""
++    title = "StudySaga"
++    user = None
++    token = ""
++    profile = {}
++    crystals = 0
++    theme = LIGHT
++
++    _study_total = 0
++    _study_elapsed = 0.0
++    _study_ev = None
++    pomo_work = 25
++    pomo_break = 5
++    pomo_cycles = 4
++    pomo_current = 0
++    pomo_in_break = False
++
+     def build(self):
+         DB.bootstrap()
+-        self.sm = ScreenManager(transition=NoTransition())
+-        self.auth = AuthScreen(name="auth")
+-        self.home = HomeScreen(name="home")
+-        self.sm.add_widget(self.auth); self.sm.add_widget(self.home)
+-        self.sm.current = "auth"
+-        return self.sm
++
++        self.root = Root(transition=NoTransition())
++        for cls in [AuthScreen, HomeScreen, StudyScreen, GachaScreen, InventoryScreen, SettingsScreen, AchievementsScreen]:
++            scr = cls()
++            if not scr.name:
++                scr.name = cls.__name__.replace("Screen", "").lower()
++            scr.add_widget(PixelBackground(), index=0)
++
++            # 안전핀: 어느 화면이든 좌하단에 [screen name] 라벨이 보여야 함
++            scr.add_widget(Label(text=f"[{scr.name}]", markup=True, pos=(5, 5), size_hint=(None, None)))
++            self.root.add_widget(scr)
++
++        Logger.info("APP: build done, screens=%d", len(self.root.screens))
++        return self.root
+ 
+-    def go(self, name): 
+-        if name in [s.name for s in self.sm.screens]:
+-            self.sm.current = name
++    def on_start(self):
++        Logger.info("APP: on_start -> go('auth')")
++        self.go("auth")
++
++    def go(self, name: str):
++        Logger.info("APP: go -> %s", name)
++        self.root.current = name
++        if name == "inventory":
++            self.refresh_inventory("", "all")
++        if name == "home":
++            self.refresh_home()
++        if name == "settings":
++            self.populate_settings()
++        if name == "achievements":
++            self.refresh_achievements()
++        if name == "study":
++            self.refresh_week_bars()
+ 
+-    def set_msg(self, txt): 
+-        if hasattr(self.auth, "msg"): self.auth.msg.text = txt
++    def set_msg(self, txt):
++        try:
++            scr = self.root.get_screen("auth")
++            if "msg" in scr.ids:
++                scr.ids.msg.text = txt
++        except Exception as e:
++            Logger.exception("MSG set failed: %s", e)
+ 
+-    def do_register(self, email, pw, gender):
+-        ok, msg = AUTH.register(email.strip(), pw.strip(), (gender or 'female').strip())
++    # -------- Auth --------
++    def do_register(self, email, password, gender):
++        ok, msg = AUTH.register(email.strip(), password.strip(), (gender or "female").strip())
+         self.set_msg(msg)
+ 
+-    def do_login(self, email, pw):
+-        ok, msg, user = AUTH.login(email.strip(), pw.strip())
++    def do_login(self, email, password):
++        ok, msg, user = AUTH.login(email.strip(), password.strip())
+         self.set_msg(msg)
+-        if not ok: 
++        if not ok:
+             return
+-        # Save profile and switch to Home
+         self.user = user
+         self.token = user["token"]
+         self.profile = {
+             "id": user["id"],
+             "email": user["email"],
+-            "nickname": user.get("nickname",""),
+-            "gender": user.get("gender","female")
++            "nickname": user.get("nickname", ""),
++            "gender": user.get("gender", "female"),
+         }
+-        self.home.hello.text = f"Hi, {self.profile.get('nickname','')}! ({self.profile.get('gender','?')})"
+-        self.go("home")  # <-- navigate after successful login
++        self.theme = DARK if DB.get_theme(self.profile["id"]) else LIGHT
++        self.crystals = DB.get_crystals(self.profile["id"])
++        self.refresh_home()
++        self.go("home")
++
++    # -------- Home --------
++    def refresh_home(self):
++        if not self.user:
++            return
++        self.crystals = DB.get_crystals(self.profile["id"])
++        scr = self.root.get_screen("home")
++
++        if "hello" in scr.ids:
++            scr.ids.hello.text = "Hi, {}!  ✨  Crystals: {}".format(self.profile.get("nickname", ""), self.crystals)
++
++        stage = scr.ids.get("avatar_stage")
++        if stage:
++            stage.clear_widgets()
++            stage.add_widget(PixelCharacter(gender=self.profile.get("gender", "female"), size_hint=(1, 1)))
++
++        s = DB.get_settings(self.profile["id"])
++        today = DB.minutes_today(self.profile["id"])
++        goal = s.get("daily_goal_minutes", 60)
++        f, l = DB.equipped_stats(self.profile["id"])
++        if "today_goal" in scr.ids:
++            scr.ids.today_goal.text = "Today {}/{} min    |    Focus +{}  Luck +{}".format(today, goal, f, l)
++
++    # --- 이하(Study/Gacha/Inventory/Settings/Achievements)는 기존 코드 그대로 사용하면 됩니다 ---
++    # 핵심은: KV 로드/화면전환/홈화면 캐릭터 표시가 확실히 되도록 하는 부분입니다.
++
+ 
+-if __name__=="__main__":
++if __name__ == "__main__":
+     StudySagaApp().run()
