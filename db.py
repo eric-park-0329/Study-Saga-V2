@@ -240,69 +240,84 @@ def get_achievements(uid):
     return r
 
 def init_achievements(uid):
-    """Initialize default achievements for a user"""
+    """Initialize default achievements for a user - adds any missing achievements"""
     c=_c(); x=c.cursor()
-    x.execute('SELECT COUNT(*) as cnt FROM achievements WHERE user_id=?', (uid,))
-    if x.fetchone()['cnt'] == 0:
-        achs = [
-            # Beginner achievements (5)
-            (uid, 'First Study', 'Complete your first study session', 0, 1),
-            (uid, 'Getting Started', 'Study for 30 minutes total', 0, 30),
-            (uid, 'First Roll', 'Perform your first gacha roll', 0, 1),
-            (uid, 'First Item', 'Acquire your first item', 0, 1),
-            (uid, 'Quick Start', 'Complete 3 study sessions', 0, 3),
-            
-            # Study Time achievements (10)
-            (uid, 'Study Rookie', 'Study for 1 hour total', 0, 60),
-            (uid, 'Study Novice', 'Study for 2 hours total', 0, 120),
-            (uid, 'Study Apprentice', 'Study for 5 hours total', 0, 300),
-            (uid, 'Study Warrior', 'Study for 10 hours total', 0, 600),
-            (uid, 'Study Expert', 'Study for 20 hours total', 0, 1200),
-            (uid, 'Study Master', 'Study for 50 hours total', 0, 3000),
-            (uid, 'Study Grandmaster', 'Study for 75 hours total', 0, 4500),
-            (uid, 'Study Legend', 'Study for 100 hours total', 0, 6000),
-            (uid, 'Study Mythic', 'Study for 150 hours total', 0, 9000),
-            (uid, 'Study God', 'Study for 200 hours total', 0, 12000),
-            
-            # Crystal achievements (6)
-            (uid, 'Pocket Change', 'Earn 100 crystals', 0, 100),
-            (uid, 'Crystal Collector', 'Earn 1000 crystals', 0, 1000),
-            (uid, 'Crystal Hoarder', 'Earn 5000 crystals', 0, 5000),
-            (uid, 'Crystal Tycoon', 'Earn 10000 crystals', 0, 10000),
-            (uid, 'Crystal Magnate', 'Earn 25000 crystals', 0, 25000),
-            (uid, 'Crystal Emperor', 'Earn 50000 crystals', 0, 50000),
-            
-            # Gacha achievements (5)
-            (uid, 'Gacha Beginner', 'Perform 10 gacha rolls', 0, 10),
-            (uid, 'Gacha Enthusiast', 'Perform 25 gacha rolls', 0, 25),
-            (uid, 'Gacha Master', 'Perform 50 gacha rolls', 0, 50),
-            (uid, 'Gacha Addict', 'Perform 100 gacha rolls', 0, 100),
-            (uid, 'Gacha Legend', 'Perform 250 gacha rolls', 0, 250),
-            
-            # Level achievements (5)
-            (uid, 'Level 5', 'Reach level 5', 0, 5),
-            (uid, 'Level 10', 'Reach level 10', 0, 10),
-            (uid, 'Level 25', 'Reach level 25', 0, 25),
-            (uid, 'Level 50', 'Reach level 50', 0, 50),
-            (uid, 'Level 100', 'Reach level 100', 0, 100),
-            
-            # Collection achievements (4)
-            (uid, 'Collector', 'Own 5 different items', 0, 5),
-            (uid, 'Hoarder', 'Own 15 items total', 0, 15),
-            (uid, 'Item Master', 'Own 25 items total', 0, 25),
-            (uid, 'Treasure Hunter', 'Own all 6 unique items', 0, 6),
-            
-            # Special achievements (5)
-            (uid, 'Lucky Strike', 'Get a gold rarity item from gacha', 0, 1),
-            (uid, 'Marathon Runner', 'Complete a 60 minute study session', 0, 1),
-            (uid, 'Ultra Marathon', 'Complete a 90 minute study session', 0, 1),
-            (uid, 'Power User', 'Activate an item 10 times', 0, 10),
-            (uid, 'Consistency King', 'Study for 7 consecutive days', 0, 7),
-        ]
+    
+    # Get existing achievement names for this user
+    x.execute('SELECT name FROM achievements WHERE user_id=?', (uid,))
+    existing_names = set(row['name'] for row in x.fetchall())
+    
+    # Define all achievements
+    all_achs = [
+        # Beginner achievements (5)
+        (uid, 'First Study', 'Complete your first study session', 0, 1),
+        (uid, 'Getting Started', 'Study for 30 minutes total', 0, 30),
+        (uid, 'First Roll', 'Perform your first gacha roll', 0, 1),
+        (uid, 'First Item', 'Acquire your first item', 0, 1),
+        (uid, 'Quick Start', 'Complete 3 study sessions', 0, 3),
+        
+        # Study Time achievements (10)
+        (uid, 'Study Rookie', 'Study for 1 hour total', 0, 60),
+        (uid, 'Study Novice', 'Study for 2 hours total', 0, 120),
+        (uid, 'Study Apprentice', 'Study for 5 hours total', 0, 300),
+        (uid, 'Study Warrior', 'Study for 10 hours total', 0, 600),
+        (uid, 'Study Expert', 'Study for 20 hours total', 0, 1200),
+        (uid, 'Study Master', 'Study for 50 hours total', 0, 3000),
+        (uid, 'Study Grandmaster', 'Study for 75 hours total', 0, 4500),
+        (uid, 'Study Legend', 'Study for 100 hours total', 0, 6000),
+        (uid, 'Study Mythic', 'Study for 150 hours total', 0, 9000),
+        (uid, 'Study God', 'Study for 200 hours total', 0, 12000),
+        
+        # Crystal achievements (6)
+        (uid, 'Pocket Change', 'Earn 100 crystals', 0, 100),
+        (uid, 'Crystal Collector', 'Earn 1000 crystals', 0, 1000),
+        (uid, 'Crystal Hoarder', 'Earn 5000 crystals', 0, 5000),
+        (uid, 'Crystal Tycoon', 'Earn 10000 crystals', 0, 10000),
+        (uid, 'Crystal Magnate', 'Earn 25000 crystals', 0, 25000),
+        (uid, 'Crystal Emperor', 'Earn 50000 crystals', 0, 50000),
+        
+        # Gacha achievements (5)
+        (uid, 'Gacha Beginner', 'Perform 10 gacha rolls', 0, 10),
+        (uid, 'Gacha Enthusiast', 'Perform 25 gacha rolls', 0, 25),
+        (uid, 'Gacha Master', 'Perform 50 gacha rolls', 0, 50),
+        (uid, 'Gacha Addict', 'Perform 100 gacha rolls', 0, 100),
+        (uid, 'Gacha Legend', 'Perform 250 gacha rolls', 0, 250),
+        
+        # Level achievements (5)
+        (uid, 'Level 5', 'Reach level 5', 0, 5),
+        (uid, 'Level 10', 'Reach level 10', 0, 10),
+        (uid, 'Level 25', 'Reach level 25', 0, 25),
+        (uid, 'Level 50', 'Reach level 50', 0, 50),
+        (uid, 'Level 100', 'Reach level 100', 0, 100),
+        
+        # Collection achievements (4)
+        (uid, 'Collector', 'Own 5 different items', 0, 5),
+        (uid, 'Hoarder', 'Own 15 items total', 0, 15),
+        (uid, 'Item Master', 'Own 25 items total', 0, 25),
+        (uid, 'Treasure Hunter', 'Own all 6 unique items', 0, 6),
+        
+        # Special achievements (5)
+        (uid, 'Lucky Strike', 'Get a gold rarity item from gacha', 0, 1),
+        (uid, 'Marathon Runner', 'Complete a 60 minute study session', 0, 1),
+        (uid, 'Ultra Marathon', 'Complete a 90 minute study session', 0, 1),
+        (uid, 'Power User', 'Activate an item 10 times', 0, 10),
+        (uid, 'Consistency King', 'Study for 7 consecutive days', 0, 7),
+    ]
+    
+    # Filter out achievements that already exist
+    new_achs = [ach for ach in all_achs if ach[1] not in existing_names]
+    
+    # Insert only new achievements
+    if new_achs:
         x.executemany('''INSERT INTO achievements(user_id, name, description, progress, goal)
-                         VALUES (?, ?, ?, ?, ?)''', achs)
+                         VALUES (?, ?, ?, ?, ?)''', new_achs)
         c.commit()
+        print(f"Added {len(new_achs)} new achievements for user {uid}")
+    
     c.close()
+    
+    # Backfill progress for newly added achievements based on existing data
+    backfill_achievement_progress(uid)
 
 def update_achievement(uid, name, increment=1):
     """Update achievement progress and mark as completed if goal reached"""
@@ -461,5 +476,73 @@ def clean_expired_items(uid):
     c=_c(); x=c.cursor()
     now = int(time.time())
     x.execute('DELETE FROM active_items WHERE user_id=? AND expires_at <= ?', (uid, now))
+    c.commit()
+    c.close()
+
+def backfill_achievement_progress(uid):
+    """Backfill progress for achievements based on existing data"""
+    c=_c(); x=c.cursor()
+    
+    # Get existing user data
+    x.execute('SELECT * FROM users WHERE id=?', (uid,))
+    user = x.fetchone()
+    if not user:
+        c.close()
+        return
+    
+    user = dict(user)
+    
+    # Backfill study time achievements
+    total_study_minutes = get_total_study_minutes(uid)
+    if total_study_minutes > 0:
+        study_achievements = ['Getting Started', 'Study Rookie', 'Study Novice', 'Study Apprentice', 
+                            'Study Warrior', 'Study Expert', 'Study Master', 'Study Grandmaster', 
+                            'Study Legend', 'Study Mythic', 'Study God']
+        for ach_name in study_achievements:
+            x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                     (total_study_minutes, uid, ach_name))
+    
+    # Backfill crystal achievements
+    total_crystals = get_total_crystals_earned(uid)
+    if total_crystals > 0:
+        crystal_achievements = ['Pocket Change', 'Crystal Collector', 'Crystal Hoarder', 
+                               'Crystal Tycoon', 'Crystal Magnate', 'Crystal Emperor']
+        for ach_name in crystal_achievements:
+            x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                     (total_crystals, uid, ach_name))
+    
+    # Backfill level achievements
+    level = user.get('level', 1)
+    if level > 1:
+        level_achievements = ['Level 5', 'Level 10', 'Level 25', 'Level 50', 'Level 100']
+        for ach_name in level_achievements:
+            x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                     (level, uid, ach_name))
+    
+    # Backfill collection achievements
+    inventory = get_inventory(uid)
+    if len(inventory) > 0:
+        total_items = len(inventory)
+        unique_items = len(set(i['item_id'] for i in inventory))
+        
+        x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                 (unique_items, uid, 'Collector'))
+        x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                 (unique_items, uid, 'Treasure Hunter'))
+        x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                 (total_items, uid, 'Hoarder'))
+        x.execute('UPDATE achievements SET progress=? WHERE user_id=? AND name=? AND progress=0',
+                 (total_items, uid, 'Item Master'))
+    
+    # Check and mark completed achievements
+    x.execute('SELECT * FROM achievements WHERE user_id=? AND completed=0', (uid,))
+    achievements = x.fetchall()
+    for ach in achievements:
+        ach = dict(ach)
+        if ach['progress'] >= ach['goal']:
+            now = int(time.time())
+            x.execute('UPDATE achievements SET completed=1, completed_at=? WHERE id=?',
+                     (now, ach['id']))
+    
     c.commit()
     c.close()

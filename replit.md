@@ -115,6 +115,15 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
+- **2025-10-18**: 대규모 기능 업데이트
+  - EXP & 레벨 시스템 추가 (1분 = 1 EXP, 레벨업 시스템)
+  - 아이템 활성화 시스템 (Bronze 10분, Silver 30분, Gold 60분)
+  - Gacha chest 애니메이션 (rarity별 chest 이미지 표시)
+  - Achievements 40개로 확장 (7개 카테고리)
+  - Study 화면 UI 개선 (활성 아이템 표시)
+  - Inventory 아이템 사용 기능 추가
+  - 홈 화면에 레벨 및 EXP 진행도 표시
+
 - **2025-10-18**: 홈 화면 레이아웃 개선
   - 버튼들을 양쪽 사이드로 배치 (왼쪽 3개, 오른쪽 2개)
   - 중앙의 책상 배경이 잘 보이도록 레이아웃 조정
