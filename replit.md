@@ -115,6 +115,26 @@ The project is configured for Replit with:
 4. Automatic database initialization on first run
 
 ### Recent Changes
+- **2025-10-18**: Unicode/Emoji 문제 해결
+  - 모든 emoji를 텍스트로 변경 (♂/♀ → Male/Female, 📚/🎁/🏆/🎒/⚙️ → 텍스트)
+  - 가챠 결과 prefix 변경 (🥉/🥈/🥇 → [BRONZE]/[SILVER]/[GOLD])
+  - 업적 상태 표시 변경 (✅/⏳ → [OK]/[ ])
+  - VNC 환경에서 [X] 표시 문제 완전 해결
+
+- **2025-10-18**: Gacha 시스템 확률 기반 개편
+  - Cosmetic 아이템 완전 제거 (cape, hair, hat)
+  - 남은 아이템: 6개 (Bronze 2, Silver 2, Gold 2)
+  - 확률 기반 가챠 구현:
+    * Bronze (10💎): 90% bronze, 9% silver, 1% gold
+    * Silver (30💎): 70% bronze, 25% silver, 5% gold
+    * Gold (60💎): 50% bronze, 40% silver, 10% gold
+  - Fashion Icon 업적 제거 (총 20개 업적)
+
+- **2025-10-18**: 업적 시스템 확장 (5개 → 21개 → 20개)
+  - 7개 카테고리: Beginner, Study, Crystal, Gacha, Weekly, Collection, Special
+  - 자동 진행도 추적 시스템
+  - Admin 계정 2000 크리스탈 설정
+
 - **2025-10-18**: Animated background system
   - Added gender-based animated GIF backgrounds to home screen
   - Male background: Cozy study room with male character (3.87 MB)

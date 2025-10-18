@@ -12,7 +12,7 @@
             anim_delay: 0.1
         Label:
             id: hello
-            text: "Hi, {}!  ✨  Crystals: {}".format(app.profile.get("nickname",""), app.crystals)
+            text: "Hi, {}! | Crystals: {}".format(app.profile.get("nickname",""), app.crystals)
             color: app.theme.text
             pos_hint: {"center_x":0.5,"top":0.98}
             size_hint: 1, None
@@ -25,35 +25,35 @@
             height: self.minimum_height
             pos_hint: {"center_x":0.5,"center_y":0.33}
             Button:
-                text: "Study 📚"
+                text: "Study"
                 on_release: app.go("study")
                 background_color: app.theme.card
                 color: app.theme.text
                 size_hint_y: None
                 height: dp(70)
             Button:
-                text: "Gacha 🎁"
+                text: "Gacha"
                 on_release: app.go("gacha")
                 background_color: app.theme.card
                 color: app.theme.text
                 size_hint_y: None
                 height: dp(70)
             Button:
-                text: "Achievements 🏆"
+                text: "Achievements"
                 on_release: app.go("achievements")
                 background_color: app.theme.card
                 color: app.theme.text
                 size_hint_y: None
                 height: dp(70)
             Button:
-                text: "Inventory 🎒"
+                text: "Inventory"
                 on_release: app.go("inventory")
                 background_color: app.theme.card
                 color: app.theme.text
                 size_hint_y: None
                 height: dp(70)
             Button:
-                text: "Settings ⚙️"
+                text: "Settings"
                 on_release: app.go("settings")
                 background_color: app.theme.card
                 color: app.theme.text

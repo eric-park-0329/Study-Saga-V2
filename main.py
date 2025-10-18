@@ -169,7 +169,7 @@ class StudySagaApp(App):
         goal_minutes = user.get("daily_goal_minutes", 60)
         
         try:
-            self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}!  ✨  Crystals: {self.crystals}"
+            self.home.ids.hello.text = f"Hi, {self.profile['nickname'] or 'User'}! | Crystals: {self.crystals}"
             self.home.ids.today_goal.text = f"Today: {today_minutes}/{goal_minutes} min"
             
             # Set background based on gender
@@ -310,7 +310,7 @@ class StudySagaApp(App):
         
         # Update UI
         try:
-            self.study_screen.ids.status.text = f"✅ Completed! +{crystals_earned} crystals"
+            self.study_screen.ids.status.text = f"[OK] Completed! +{crystals_earned} crystals"
             self.study_screen.ids.pbar.value = 1.0
         except:
             pass
@@ -355,7 +355,7 @@ class StudySagaApp(App):
         
         if self.crystals < cost:
             try:
-                self.gacha_screen.ids.result.text = "❌ Not enough crystals!"
+                self.gacha_screen.ids.result.text = "[!] Not enough crystals!"
             except:
                 pass
             return
@@ -419,11 +419,11 @@ class StudySagaApp(App):
                 DB.update_achievement(uid, "Lucky Strike", 1)
             
             # Show result
-            rarity_emoji = {"bronze": "🥉", "silver": "🥈", "gold": "🥇"}
-            emoji = rarity_emoji.get(item["rarity"], "🎁")
+            rarity_prefix = {"bronze": "[BRONZE]", "silver": "[SILVER]", "gold": "[GOLD]"}
+            prefix = rarity_prefix.get(item["rarity"], "[ITEM]")
             
             try:
-                self.gacha_screen.ids.result.text = f"{emoji} {item['name']}\n{item['description']}"
+                self.gacha_screen.ids.result.text = f"{prefix} {item['name']}\n{item['description']}"
                 self.gacha_screen.ids.pity.text = f"Crystals: {self.crystals}"
             except:
                 pass
@@ -545,7 +545,7 @@ class StudySagaApp(App):
                     row = BoxLayout(orientation="vertical", size_hint_y=None, height=80, spacing=4)
                     
                     # Title
-                    status = "✅" if ach["completed"] else "⏳"
+                    status = "[OK]" if ach["completed"] else "[ ]"
                     title = Label(
                         text=f"{status} {ach['name']}", 
                         color=self.theme.text if ach["completed"] else self.theme.muted,
